@@ -3,548 +3,590 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>나의 학습 플랜 · 學習計畫</title>
-
-<!-- Firebase -->
+<title>나의 학습 플랜</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
-<!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+KR:wght@400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-
 <style>
-:root {
-  --bg:       #080810;
-  --bg2:      #10101a;
-  --bg3:      #18182a;
-  --bg4:      #22223a;
-  --border:   rgba(255,255,255,0.07);
-  --border2:  rgba(255,255,255,0.13);
-  --text:     #ede8ff;
-  --text2:    #8882aa;
-  --text3:    #44405a;
-  --teal:     #7ef0c0;
-  --teal2:    #29c48a;
-  --teal-dim: rgba(126,240,192,0.08);
-  --pink:     #f07eb8;
-  --pink2:    #c44a84;
-  --pink-dim: rgba(240,126,184,0.08);
-  --purple:   #b07ef0;
-  --purple-dim: rgba(176,126,240,0.10);
-  --amber:    #f0c47e;
-  --amber-dim:rgba(240,196,126,0.10);
-  --red:      #f07e7e;
-  --red-dim:  rgba(240,126,126,0.10);
-  --r: 14px;
-  --r-sm: 8px;
+:root{
+  --bg:#faf8f4;--bg2:#f3f0ea;--bg3:#ede8de;--bg4:#e5dfd2;
+  --border:#d8d2c4;--border2:#c8c0b0;
+  --text:#2a2620;--text2:#6b6356;--text3:#a09888;
+  --teal:#2d7a5f;--teal2:#3d9970;--teal-dim:rgba(45,122,95,0.08);--teal-light:#e8f5f0;
+  --pink:#b85470;--pink2:#d4637f;--pink-dim:rgba(184,84,112,0.08);--pink-light:#fdf0f3;
+  --amber:#b87a2d;--amber-dim:rgba(184,122,45,0.08);--amber-light:#fdf6e8;
+  --purple:#7a5db8;--purple-dim:rgba(122,93,184,0.08);
+  --red:#c0392b;--red-dim:rgba(192,57,43,0.08);
+  --shadow:0 2px 12px rgba(42,38,32,0.08);
+  --shadow2:0 4px 24px rgba(42,38,32,0.12);
+  --r:14px;--r-sm:8px;--r-xs:5px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{font-size:15px}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:'Noto Sans TC',sans-serif;
-  min-height:100vh;
-  line-height:1.6;
-  overflow-x:hidden;
-}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100vh;line-height:1.6}
 
-/* ── NOISE OVERLAY ── */
-body::before{
-  content:'';position:fixed;inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  background-size:200px;
-  pointer-events:none;z-index:0;opacity:0.6;
-}
+/* ── PAPER TEXTURE ── */
+body::before{content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:1}
 
-/* ── AURORA BG ── */
-.aurora{
-  position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
-}
-.aurora-blob{
-  position:absolute;border-radius:50%;filter:blur(80px);opacity:0.12;
-  animation:drift 12s ease-in-out infinite alternate;
-}
-.aurora-blob:nth-child(1){width:500px;height:500px;background:var(--purple);top:-100px;left:-100px;animation-delay:0s}
-.aurora-blob:nth-child(2){width:400px;height:400px;background:var(--pink);top:40%;right:-80px;animation-delay:-4s}
-.aurora-blob:nth-child(3){width:350px;height:350px;background:var(--teal);bottom:-60px;left:30%;animation-delay:-8s}
-@keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,20px) scale(1.08)}}
+/* ── DECORATIVE BG ELEMENTS ── */
+.bg-deco{position:fixed;pointer-events:none;z-index:0;font-family:'Noto Serif KR',serif;color:rgba(42,38,32,0.025);user-select:none;line-height:1}
+.bg-deco-1{top:10%;right:5%;font-size:120px}
+.bg-deco-2{bottom:15%;left:3%;font-size:80px}
+.bg-deco-3{top:50%;right:15%;font-size:60px}
 
 /* ── LAYOUT ── */
 .shell{display:flex;min-height:100vh;position:relative;z-index:1}
-
 .sidebar{
-  width:230px;background:rgba(16,16,26,0.85);backdrop-filter:blur(20px);
+  width:240px;background:rgba(243,240,234,0.92);backdrop-filter:blur(16px);
   border-right:1px solid var(--border);padding:28px 0;
   display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;
+  box-shadow:2px 0 20px rgba(42,38,32,0.06);
 }
 .logo{padding:0 22px 24px;border-bottom:1px solid var(--border);margin-bottom:16px}
-.logo-kr{font-family:'Noto Serif KR',serif;font-size:11px;color:var(--teal);letter-spacing:0.15em;margin-bottom:4px}
-.logo-title{font-size:16px;font-weight:700;color:var(--text)}
-.logo-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
+.logo-kr{font-family:'Noto Serif KR',serif;font-size:11px;color:var(--teal);letter-spacing:0.2em;margin-bottom:6px;text-transform:uppercase}
+.logo-title{font-size:17px;font-weight:700;color:var(--text)}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:3px;font-family:'DM Mono',monospace}
+.logo-user{font-size:12px;color:var(--teal2);margin-top:6px;font-weight:500}
 
-.nav-item{
-  display:flex;align-items:center;gap:10px;padding:11px 22px;
-  cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;
-  border-left:2px solid transparent;transition:all 0.18s;position:relative;
-}
-.nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03)}
-.nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 22px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;border-left:2px solid transparent;transition:all 0.15s}
+.nav-item:hover{color:var(--text);background:rgba(42,38,32,0.04)}
+.nav-item.active{color:var(--teal);border-left-color:var(--teal);background:var(--teal-dim);font-weight:700}
 .nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
-.nav-kr{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;margin-left:auto}
+.nav-kr{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;margin-left:auto;letter-spacing:0.08em}
+.nav-badge{font-size:10px;background:var(--pink);color:white;border-radius:10px;padding:1px 6px;margin-left:auto}
 
-.main{margin-left:230px;flex:1;padding:36px 36px 60px;max-width:860px}
+.main{margin-left:240px;flex:1;padding:36px 36px 80px;max-width:900px}
 
 /* ── PAGES ── */
-.page{display:none;animation:fadeUp 0.3s ease both}
+.page{display:none;animation:fadeUp 0.25s ease both}
 .page.active{display:block}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-.page-title{font-size:24px;font-weight:700;margin-bottom:3px}
-.page-sub{font-size:13px;color:var(--text2);margin-bottom:28px;font-family:'DM Mono',monospace}
+.page-title{font-size:22px;font-weight:700;margin-bottom:3px;color:var(--text)}
+.page-title-kr{font-family:'Noto Serif KR',serif;font-size:13px;color:var(--teal);margin-bottom:20px;letter-spacing:0.1em}
 
 /* ── CARDS ── */
-.card{
-  background:rgba(16,16,26,0.7);backdrop-filter:blur(12px);
-  border:1px solid var(--border);border-radius:var(--r);
-  padding:20px 22px;margin-bottom:16px;
-  transition:border-color 0.2s;
-}
-.card:hover{border-color:var(--border2)}
-.card-title{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em}
+.card{background:white;border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow);transition:box-shadow 0.2s}
+.card:hover{box-shadow:var(--shadow2)}
+.card-title{font-size:12px;font-weight:700;margin-bottom:14px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:8px}
 
 /* ── BADGES ── */
 .badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;display:inline-block;flex-shrink:0;letter-spacing:0.04em}
-.b-en{background:rgba(126,196,240,0.12);color:#7ec4f0}
+.b-en{background:rgba(45,122,95,0.1);color:var(--teal)}
 .b-kr{background:var(--pink-dim);color:var(--pink)}
-.b-topik{background:var(--teal-dim);color:var(--teal)}
+.b-topik{background:var(--purple-dim);color:var(--purple)}
 .b-warn{background:var(--red-dim);color:var(--red)}
 .b-ok{background:var(--teal-dim);color:var(--teal)}
-.b-gray{background:rgba(255,255,255,0.06);color:var(--text2)}
+.b-gray{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
 
 /* ── BUTTONS ── */
-.btn{
-  padding:9px 18px;border-radius:var(--r-sm);border:1px solid var(--border2);
-  background:transparent;color:var(--text);font-size:13px;cursor:pointer;
-  font-family:inherit;transition:all 0.15s;font-weight:500;
-}
-.btn:hover{background:var(--bg4);border-color:rgba(255,255,255,0.2)}
-.btn-teal{background:var(--teal);color:#050a0e;border-color:var(--teal);font-weight:700}
-.btn-teal:hover{background:#5de0a8;border-color:#5de0a8}
-.btn-pink{background:var(--pink-dim);color:var(--pink);border-color:rgba(240,126,184,0.3)}
-.btn-sm{padding:5px 12px;font-size:12px}
+.btn{padding:9px 18px;border-radius:var(--r-sm);border:1px solid var(--border2);background:white;color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;transition:all 0.15s;font-weight:500;box-shadow:0 1px 4px rgba(42,38,32,0.08)}
+.btn:hover{background:var(--bg2);border-color:var(--border2);box-shadow:var(--shadow)}
+.btn-teal{background:var(--teal);color:white;border-color:var(--teal);box-shadow:0 2px 8px rgba(45,122,95,0.25)}
+.btn-teal:hover{background:var(--teal2);border-color:var(--teal2)}
+.btn-pink{background:var(--pink-light);color:var(--pink);border-color:rgba(184,84,112,0.3)}
+.btn-pink:hover{background:var(--pink-dim)}
+.btn-amber{background:var(--amber-light);color:var(--amber);border-color:rgba(184,122,45,0.3)}
+.btn-sm{padding:6px 14px;font-size:12px}
 .btn-xs{padding:3px 8px;font-size:11px}
 
 /* ── INPUTS ── */
-input[type=number],input[type=text],input[type=email],input[type=password],select,textarea{
-  background:var(--bg3);border:1px solid var(--border2);color:var(--text);
+input[type=number],input[type=text],input[type=email],select,textarea{
+  background:white;border:1px solid var(--border);color:var(--text);
   border-radius:var(--r-sm);padding:9px 12px;font-size:14px;font-family:inherit;
   outline:none;transition:border-color 0.15s,box-shadow 0.15s;
 }
 input[type=number]{width:auto;text-align:center}
-input:focus,select:focus,textarea:focus{
-  border-color:var(--teal);box-shadow:0 0 0 2px rgba(126,240,192,0.12)
-}
-select option{background:var(--bg3)}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(45,122,95,0.1)}
+select option{background:white}
 
 /* ── STATS ── */
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
-.stat-card{
-  background:var(--bg3);border-radius:var(--r-sm);padding:18px 14px;text-align:center;
-  border:1px solid var(--border);transition:all 0.2s;
-}
-.stat-card:hover{border-color:var(--teal);background:var(--teal-dim)}
-.stat-num{font-size:26px;font-weight:700;color:var(--teal);font-family:'DM Mono',monospace}
-.stat-label{font-size:11px;color:var(--text3);margin-top:4px;letter-spacing:0.06em}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:white;border-radius:var(--r-sm);padding:18px 14px;text-align:center;border:1px solid var(--border);box-shadow:var(--shadow);transition:all 0.2s}
+.stat-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:var(--shadow2)}
+.stat-num{font-size:28px;font-weight:700;color:var(--teal);font-family:'DM Mono',monospace}
+.stat-label{font-size:11px;color:var(--text3);margin-top:4px;letter-spacing:0.06em;text-transform:uppercase}
 
 /* ── PROGRESS ── */
-.prog-wrap{background:var(--bg3);border-radius:4px;height:4px;overflow:hidden;margin-bottom:20px}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--teal2),var(--teal));border-radius:4px;transition:width 0.5s cubic-bezier(.4,0,.2,1)}
+.prog-wrap{background:var(--bg2);border-radius:4px;height:5px;overflow:hidden;margin-bottom:20px;border:1px solid var(--border)}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2));border-radius:4px;transition:width 0.5s cubic-bezier(.4,0,.2,1)}
+
+/* ── STREAK ── */
+.streak-bar{display:flex;gap:5px;margin-bottom:20px;flex-wrap:wrap}
+.streak-day{width:34px;height:34px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;border:1px solid var(--border);background:var(--bg2);color:var(--text3);gap:1px;transition:all 0.15s}
+.streak-day.done{background:var(--teal-light);border-color:var(--teal);color:var(--teal)}
+.streak-day.today{border-color:var(--teal);border-width:2px;color:var(--text);background:white;font-weight:700}
+.streak-day .s-emoji{font-size:14px}
+.streak-count{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.streak-fire{font-size:28px}
+.streak-num{font-size:22px;font-weight:700;color:var(--amber);font-family:'DM Mono',monospace}
+.streak-label{font-size:13px;color:var(--text2)}
 
 /* ── IDOL CARD ── */
 .idol-card{
-  position:relative;border-radius:var(--r);overflow:hidden;
-  margin-bottom:22px;padding:22px 22px 20px;
-  background:linear-gradient(135deg,rgba(176,126,240,0.12),rgba(240,126,184,0.08),rgba(126,240,192,0.06));
-  border:1px solid rgba(176,126,240,0.2);
+  background:linear-gradient(135deg,#fdf6f9,#f8f4fd,#f0f9f5);
+  border:1px solid rgba(184,84,112,0.15);border-radius:var(--r);
+  padding:20px 22px;margin-bottom:22px;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
 }
-.idol-card::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at top right,rgba(240,126,184,0.08) 0%,transparent 60%);
-  pointer-events:none;
-}
-.idol-deco{
-  position:absolute;top:14px;right:60px;
-  font-family:'Noto Serif KR',serif;font-size:48px;
-  color:rgba(255,255,255,0.03);line-height:1;pointer-events:none;user-select:none;
-}
-.idol-tag{font-size:10px;color:var(--purple);font-family:'DM Mono',monospace;letter-spacing:0.12em;margin-bottom:8px;text-transform:uppercase}
-.idol-kr{
-  font-family:'Noto Serif KR',serif;font-size:17px;
-  color:var(--text);line-height:1.8;margin-bottom:8px;
-}
-.idol-tw{font-size:12px;color:var(--text2);line-height:1.6}
+.idol-card::after{content:'';position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(184,84,112,0.04);pointer-events:none}
+.idol-deco{position:absolute;bottom:10px;right:16px;font-family:'Noto Serif KR',serif;font-size:56px;color:rgba(42,38,32,0.04);line-height:1;pointer-events:none;user-select:none}
+.idol-tag{font-size:10px;color:var(--pink);font-family:'DM Mono',monospace;letter-spacing:0.12em;margin-bottom:8px;text-transform:uppercase;font-weight:700}
+.idol-kr{font-family:'Noto Serif KR',serif;font-size:17px;color:var(--text);line-height:1.9;margin-bottom:6px}
+.idol-tw{font-size:12px;color:var(--text2);line-height:1.6;font-style:italic}
 .idol-name{font-size:11px;color:var(--text3);margin-top:10px;font-family:'DM Mono',monospace}
-.idol-btns{position:absolute;top:14px;right:14px;display:flex;gap:6px}
+.idol-refresh{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px;transition:all 0.15s;border-radius:50%}
+.idol-refresh:hover{color:var(--pink);background:var(--pink-dim)}
 
 /* ── TASK ROW ── */
 .task-row{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)}
 .task-row:last-child{border-bottom:none}
-.chk{
-  width:20px;height:20px;border-radius:5px;border:1.5px solid var(--border2);
-  cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-  transition:all 0.15s;margin-top:2px;color:transparent;font-size:11px;
-}
-.chk.done{background:var(--teal);border-color:var(--teal);color:#050a0e}
+.chk{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;margin-top:2px;color:transparent;font-size:11px}
+.chk.done{background:var(--teal);border-color:var(--teal);color:white}
 .task-body{flex:1;min-width:0}
-.task-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-name{font-size:14px;font-weight:500;color:var(--text)}
 .task-name.done{text-decoration:line-through;color:var(--text3)}
 .task-detail{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.5}
-.task-method{
-  font-size:12px;color:var(--text2);margin-top:8px;padding:10px 12px;
-  background:var(--bg3);border-radius:6px;border-left:2px solid var(--teal);
-  line-height:1.7;display:none;
-}
+.task-method{font-size:12px;color:var(--text2);margin-top:8px;padding:10px 12px;background:var(--teal-light);border-radius:6px;border-left:3px solid var(--teal);line-height:1.7;display:none}
 .task-method.open{display:block;animation:fadeUp 0.2s ease}
-.method-btn{font-size:11px;color:var(--teal2);background:none;border:none;cursor:pointer;margin-top:5px;padding:0;font-family:inherit;opacity:0.8}
-.method-btn:hover{opacity:1}
+.method-btn{font-size:11px;color:var(--teal);background:none;border:none;cursor:pointer;margin-top:5px;padding:0;font-family:inherit;font-weight:600}
 .task-meta{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
 
-/* ── WEEK TABS ── */
-.week-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
-.day-btn{
-  padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);
-  background:none;cursor:pointer;font-size:13px;color:var(--text2);
-  font-family:inherit;transition:all 0.15s;
-}
-.day-btn:hover{color:var(--text);border-color:var(--border2)}
-.day-btn.active{background:var(--teal);color:#050a0e;border-color:var(--teal);font-weight:700}
-.day-btn.is-today{border-color:var(--teal);color:var(--teal)}
+/* ── TIMER ── */
+.timer-card{background:var(--teal-light);border:1px solid rgba(45,122,95,0.2);border-radius:var(--r);padding:18px 22px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.timer-display{font-size:36px;font-weight:700;color:var(--teal);font-family:'DM Mono',monospace;min-width:100px}
+.timer-label{font-size:12px;color:var(--teal2);margin-top:2px}
+.timer-btns{display:flex;gap:8px;flex-wrap:wrap}
 
-/* ── CALENDAR ── */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
-.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
-.cal-head{text-align:center;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;padding:4px 0}
-.cal-day{
-  aspect-ratio:1;border-radius:8px;border:1px solid var(--border);
-  background:var(--bg3);cursor:pointer;transition:all 0.15s;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  font-size:12px;font-family:'DM Mono',monospace;gap:2px;
-}
-.cal-day:hover{border-color:var(--border2);background:var(--bg4)}
-.cal-day.today{border-color:var(--teal);color:var(--teal);background:var(--teal-dim)}
-.cal-day.has-log{border-color:var(--teal2)}
-.cal-day.empty{background:transparent;border-color:transparent;cursor:default}
-.cal-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);opacity:0.7}
-.cal-pct{font-size:9px;color:var(--teal2)}
-.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.month-label{font-size:15px;font-weight:600}
+/* ── FLASHCARD ── */
+.fc-card{background:white;border:2px solid var(--border);border-radius:var(--r);padding:32px 24px;text-align:center;margin-bottom:16px;box-shadow:var(--shadow2);cursor:pointer;transition:all 0.3s;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.fc-card:hover{border-color:var(--teal);transform:translateY(-2px)}
+.fc-front{font-size:28px;font-weight:700;color:var(--text);margin-bottom:8px}
+.fc-sub{font-size:14px;color:var(--text3);font-family:'DM Mono',monospace}
+.fc-back{display:none;animation:fadeUp 0.2s ease}
+.fc-back.show{display:block}
+.fc-meaning{font-size:20px;font-weight:500;color:var(--teal);margin-bottom:6px}
+.fc-example{font-size:13px;color:var(--text2);font-style:italic;line-height:1.6}
+.fc-hint{font-size:12px;color:var(--text3);position:absolute;bottom:12px;right:14px}
+.fc-nav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+.fc-progress{font-size:12px;color:var(--text3);text-align:center;margin-bottom:12px;font-family:'DM Mono',monospace}
+.fc-result{display:flex;gap:10px;justify-content:center;margin-top:12px}
+.fc-add-form{background:var(--bg2);border-radius:var(--r);padding:16px;margin-top:16px}
+.fc-field{margin-bottom:10px}
+.fc-field label{font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em}
+.fc-field input,.fc-field select{width:100%}
 
-/* ── WEEK CARD (weekly view) ── */
+/* ── WEEK CARDS ── */
 .week-card-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px}
-.week-card{
-  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
-  padding:10px 8px;min-height:80px;cursor:pointer;transition:all 0.15s;
-}
-.week-card:hover,.week-card.active{border-color:var(--teal);background:var(--teal-dim)}
-.week-card-label{font-size:12px;font-weight:600;margin-bottom:6px;text-align:center}
+.week-card{background:white;border:1px solid var(--border);border-radius:10px;padding:10px 8px;min-height:80px;cursor:pointer;transition:all 0.15s;box-shadow:var(--shadow)}
+.week-card:hover,.week-card.active{border-color:var(--teal);background:var(--teal-light);box-shadow:var(--shadow2)}
+.week-card-label{font-size:12px;font-weight:700;margin-bottom:6px;text-align:center;color:var(--text2)}
+.week-card-label.today{color:var(--teal)}
 .week-card-dots{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
 .wc-dot{width:7px;height:7px;border-radius:50%}
-.wc-en{background:rgba(126,196,240,0.6)}
-.wc-kr{background:rgba(240,126,184,0.6)}
+.wc-en{background:rgba(45,122,95,0.5)}
+.wc-kr{background:rgba(184,84,112,0.5)}
+
+/* ── CALENDAR ── */
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+.cal-head{text-align:center;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;padding:4px 0;font-weight:600;text-transform:uppercase}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
+.cal-day{aspect-ratio:1;border-radius:8px;border:1px solid var(--border);background:white;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-family:'DM Mono',monospace;gap:2px;box-shadow:0 1px 3px rgba(42,38,32,0.04)}
+.cal-day:hover{border-color:var(--teal);background:var(--teal-light)}
+.cal-day.today{border-color:var(--teal);border-width:2px;background:var(--teal-light);color:var(--teal);font-weight:700}
+.cal-day.has-log{background:var(--teal-light);border-color:var(--teal2)}
+.cal-day.empty{background:transparent;border-color:transparent;cursor:default;box-shadow:none}
+.cal-dot{width:5px;height:5px;border-radius:50%;background:var(--teal)}
+.cal-pct{font-size:9px;color:var(--teal2);font-weight:600}
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.month-label{font-size:16px;font-weight:700}
 
 /* ── BOOST ── */
-.boost-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:10px 14px;background:var(--bg3);border-radius:var(--r-sm);margin-bottom:8px;
-  border:1px solid var(--border);
-}
+.boost-row{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:var(--bg2);border-radius:var(--r-sm);margin-bottom:8px;border:1px solid var(--border)}
 .boost-val{font-size:16px;font-weight:700;color:var(--teal);font-family:'DM Mono',monospace}
 
 /* ── MONTH TIMELINE ── */
 .month-row{margin-bottom:18px}
 .month-header{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px}
-.month-label-t{font-weight:600;color:var(--text)}
-.month-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 
-/* ── BOOK FORM ── */
-.field-row3{display:grid;grid-template-columns:1fr 110px 60px;gap:10px;align-items:center;margin-bottom:10px}
-.field-lbl{font-size:12px;color:var(--text2)}
+/* ── BOXES ── */
+.warn-box{background:var(--red-dim);border:1px solid rgba(192,57,43,0.2);border-radius:var(--r-sm);padding:13px 15px;font-size:13px;color:var(--red);margin-bottom:16px;line-height:1.6}
+.ok-box{background:var(--teal-light);border:1px solid rgba(45,122,95,0.2);border-radius:var(--r-sm);padding:13px 15px;font-size:13px;color:var(--teal);margin-bottom:16px;line-height:1.6}
+.notice{background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5;border:1px solid var(--border)}
+.amber-box{background:var(--amber-light);border:1px solid rgba(184,122,45,0.2);border-radius:var(--r-sm);padding:13px 15px;font-size:13px;color:var(--amber);margin-bottom:16px;line-height:1.6}
 
-/* ── WARN / OK BOXES ── */
-.warn-box{background:var(--red-dim);border:1px solid rgba(240,126,126,0.3);border-radius:var(--r-sm);padding:13px 15px;font-size:13px;color:var(--red);margin-bottom:16px;line-height:1.6}
-.ok-box{background:var(--teal-dim);border:1px solid rgba(126,240,192,0.2);border-radius:var(--r-sm);padding:13px 15px;font-size:13px;color:var(--teal);margin-bottom:16px;line-height:1.6}
-.notice{background:var(--bg3);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5;border:1px solid var(--border)}
-
-/* ── LOGIN SCREEN ── */
-#login-screen{
-  position:fixed;inset:0;z-index:200;
-  display:flex;align-items:center;justify-content:center;
-  background:var(--bg);
-}
-.login-card{
-  background:rgba(16,16,26,0.9);backdrop-filter:blur(20px);
-  border:1px solid rgba(176,126,240,0.25);border-radius:20px;
-  padding:48px 40px;text-align:center;max-width:380px;width:90%;
-}
-.login-kr{font-family:'Noto Serif KR',serif;font-size:28px;color:var(--text);margin-bottom:6px;line-height:1.4}
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.login-card{background:white;border:1px solid var(--border);border-radius:20px;padding:48px 40px;text-align:center;max-width:380px;width:90%;box-shadow:var(--shadow2)}
+.login-kr{font-family:'Noto Serif KR',serif;font-size:30px;color:var(--text);margin-bottom:6px;line-height:1.4}
 .login-sub{font-size:13px;color:var(--text2);margin-bottom:32px;font-family:'DM Mono',monospace}
-.google-btn{
-  display:flex;align-items:center;justify-content:center;gap:12px;
-  width:100%;padding:14px;border-radius:10px;
-  background:white;color:#1a1a1a;border:none;cursor:pointer;
-  font-size:15px;font-weight:600;font-family:inherit;
-  transition:all 0.15s;
-}
-.google-btn:hover{background:#f0f0f0;transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
-.login-notice{font-size:11px;color:var(--text3);margin-top:20px;line-height:1.6}
-.firebase-notice{
-  margin-top:24px;padding:14px;background:var(--amber-dim);border:1px solid rgba(240,196,126,0.3);
-  border-radius:8px;font-size:12px;color:var(--amber);line-height:1.6;text-align:left;
-}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px;border-radius:10px;background:var(--teal);color:white;border:none;cursor:pointer;font-size:15px;font-weight:700;font-family:inherit;transition:all 0.15s;box-shadow:0 4px 12px rgba(45,122,95,0.3)}
+.google-btn:hover{background:var(--teal2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,122,95,0.35)}
+
+/* ── QUICK ACTIONS ── */
+.quick-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.quick-btn{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:white;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);font-family:inherit;transition:all 0.15s;box-shadow:0 1px 3px rgba(42,38,32,0.06)}
+.quick-btn:hover{border-color:var(--pink);color:var(--pink);background:var(--pink-light)}
+
+/* ── WEEKLY REPORT ── */
+.report-card{background:linear-gradient(135deg,var(--teal-light),#f0f9f5);border:1px solid rgba(45,122,95,0.2);border-radius:var(--r);padding:20px;margin-bottom:16px}
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-track{background:var(--bg2)}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
 /* ── MOBILE ── */
 @media(max-width:720px){
-  .sidebar{width:100%;height:auto;position:static;flex-direction:row;padding:0;
-    border-right:none;border-bottom:1px solid var(--border);overflow-x:auto}
+  .sidebar{width:100%;height:auto;position:static;flex-direction:row;padding:0;border-right:none;border-bottom:1px solid var(--border);overflow-x:auto;box-shadow:none}
   .logo{display:none}
   .nav-item{padding:12px 14px;border-left:none;border-bottom:2px solid transparent;white-space:nowrap}
   .nav-item.active{border-bottom-color:var(--teal);border-left:none;background:transparent}
-  .nav-kr{display:none}
+  .nav-kr,.nav-badge{display:none}
   .shell{flex-direction:column}
   .main{margin-left:0;padding:20px 16px}
   .week-card-grid{grid-template-columns:repeat(4,1fr)}
+  .stat-grid{grid-template-columns:repeat(3,1fr)}
 }
-
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .shake{animation:shake 0.35s ease}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.pop{animation:pop 0.3s ease}
 </style>
 </head>
 <body>
+<div class="bg-deco bg-deco-1">공부</div>
+<div class="bg-deco bg-deco-2">학습</div>
+<div class="bg-deco bg-deco-3">힘내</div>
 
-<div class="aurora">
-  <div class="aurora-blob"></div>
-  <div class="aurora-blob"></div>
-  <div class="aurora-blob"></div>
-</div>
-
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
+    <div style="font-size:40px;margin-bottom:12px">📖</div>
     <div class="login-kr">나의 학습 플랜</div>
-    <div style="font-size:13px;color:var(--text2);margin-bottom:4px">英韓文學習計畫系統</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:6px">英韓文學習計畫系統</div>
     <div class="login-sub">TOEIC × TOPIK · 12개월</div>
     <button class="google-btn" onclick="signInGoogle()">
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="white" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="white" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="white" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="white" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       用 Google 帳號登入
     </button>
-    <div class="firebase-notice">
-      ⚙️ <strong>第一次使用？</strong> 需要先設定 Firebase。<br>
-      請依照下方說明文件完成設定，再回來登入。<br>
-      設定完成後把 Firebase 設定碼填入這個檔案的 <code>FIREBASE_CONFIG</code> 區塊。
-    </div>
-    <div class="login-notice">資料儲存在你的 Google 帳號雲端<br>換裝置登入也能看到所有記錄</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:16px;line-height:1.6">資料儲存在 Google 雲端 · 換裝置也能同步</div>
   </div>
 </div>
 
-<!-- APP SHELL -->
+<!-- APP -->
 <div class="shell" id="app" style="display:none">
-  <nav class="sidebar">
-    <div class="logo">
-      <div class="logo-kr">나의 학습</div>
-      <div class="logo-title">學習計畫系統</div>
-      <div class="logo-sub" id="user-name-display"></div>
-    </div>
-    <div class="nav-item active" onclick="nav('today')"><span class="nav-icon">✦</span>今日計畫<span class="nav-kr">오늘</span></div>
-    <div class="nav-item" onclick="nav('week')"><span class="nav-icon">◎</span>週曆安排<span class="nav-kr">주간</span></div>
-    <div class="nav-item" onclick="nav('month')"><span class="nav-icon">▦</span>月曆視圖<span class="nav-kr">월간</span></div>
-    <div class="nav-item" onclick="nav('review')"><span class="nav-icon">↺</span>複習計畫<span class="nav-kr">복습</span></div>
-    <div class="nav-item" onclick="nav('boost')"><span class="nav-icon">⚡</span>加速計算<span class="nav-kr">가속</span></div>
-    <div class="nav-item" onclick="nav('books')"><span class="nav-icon">＋</span>書本管理<span class="nav-kr">교재</span></div>
-    <div class="nav-item" onclick="nav('rules')"><span class="nav-icon">⚑</span>我的規定<span class="nav-kr">규칙</span></div>
-    <div style="margin-top:auto;padding:0 22px 12px">
-      <button class="btn btn-sm" onclick="signOut()" style="width:100%;font-size:12px;color:var(--text3);border-color:var(--border)">登出</button>
-    </div>
-  </nav>
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-kr">나의 학습</div>
+    <div class="logo-title">學習計畫系統</div>
+    <div class="logo-sub">TOEIC × TOPIK</div>
+    <div class="logo-user" id="user-display"></div>
+  </div>
+  <div class="nav-item active" onclick="nav('today')"><span class="nav-icon">✦</span>今日計畫<span class="nav-kr">오늘</span></div>
+  <div class="nav-item" onclick="nav('timer')"><span class="nav-icon">◷</span>讀書計時器<span class="nav-kr">타이머</span></div>
+  <div class="nav-item" onclick="nav('cards')"><span class="nav-icon">◈</span>單字抽認卡<span class="nav-kr">단어</span></div>
+  <div class="nav-item" onclick="nav('week')"><span class="nav-icon">◎</span>週曆安排<span class="nav-kr">주간</span></div>
+  <div class="nav-item" onclick="nav('month')"><span class="nav-icon">▦</span>月曆視圖<span class="nav-kr">월간</span></div>
+  <div class="nav-item" onclick="nav('review')"><span class="nav-icon">↺</span>複習計畫<span class="nav-kr">복습</span></div>
+  <div class="nav-item" onclick="nav('report')"><span class="nav-icon">◉</span>週報統計<span class="nav-kr">주간보고</span></div>
+  <div class="nav-item" onclick="nav('boost')"><span class="nav-icon">⚡</span>加速計算<span class="nav-kr">가속</span></div>
+  <div class="nav-item" onclick="nav('books')"><span class="nav-icon">＋</span>書本管理<span class="nav-kr">교재</span></div>
+  <div class="nav-item" onclick="nav('rules')"><span class="nav-icon">⚑</span>我的規定<span class="nav-kr">규칙</span></div>
+  <div style="margin-top:auto;padding:0 22px 12px">
+    <button class="btn btn-sm" onclick="signOut()" style="width:100%;font-size:12px;color:var(--text3)">登出</button>
+  </div>
+</nav>
 
-  <main class="main">
+<main class="main">
 
-    <!-- TODAY -->
-    <div id="page-today" class="page active">
-      <div class="page-title">오늘의 학습 · 今日計畫</div>
-      <div class="page-sub" id="today-date"></div>
-      <div class="idol-card" id="idol-box">
-        <div class="idol-deco" id="idol-deco"></div>
-        <div class="idol-btns">
-          <button class="btn btn-xs" onclick="nextIdol()">換一個</button>
-        </div>
-        <div class="idol-tag" id="idol-tag"></div>
-        <div class="idol-kr" id="idol-kr"></div>
-        <div class="idol-tw" id="idol-tw"></div>
-        <div class="idol-name" id="idol-name"></div>
-      </div>
-      <div id="warn-area"></div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-        <span style="font-size:13px;color:var(--text2)">오늘은</span>
-        <input type="number" id="avail" value="60" min="10" max="240" style="width:72px">
-        <span style="font-size:13px;color:var(--text2)">분 공부할 수 있어요</span>
-        <button class="btn btn-teal btn-sm" onclick="generateToday()">계획 생성 ↗</button>
-        <button class="btn btn-pink btn-sm" onclick="adjustToday()">오늘 일이 생겼어</button>
-      </div>
-      <div class="stat-grid">
-        <div class="stat-card"><div class="stat-num" id="s-done">0</div><div class="stat-label">완료 DONE</div></div>
-        <div class="stat-card"><div class="stat-num" id="s-total">0</div><div class="stat-label">전체 TOTAL</div></div>
-        <div class="stat-card"><div class="stat-num" id="s-pct">0%</div><div class="stat-label">달성률 RATE</div></div>
-      </div>
-      <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
-      <div class="card"><div id="task-list"><div style="color:var(--text3);font-size:14px;padding:1rem;text-align:center">분 수를 입력하고 「계획 생성」을 눌러주세요</div></div></div>
-      <div id="extra-tip"></div>
+<!-- TODAY -->
+<div id="page-today" class="page active">
+  <div class="page-title">오늘의 학습</div>
+  <div class="page-title-kr">TODAY'S STUDY PLAN</div>
+
+  <div class="idol-card" id="idol-box">
+    <button class="idol-refresh" onclick="nextIdol()" title="換一個">↺</button>
+    <div class="idol-deco" id="idol-deco"></div>
+    <div class="idol-tag" id="idol-tag"></div>
+    <div class="idol-kr" id="idol-kr"></div>
+    <div class="idol-tw" id="idol-tw"></div>
+    <div class="idol-name" id="idol-name"></div>
+  </div>
+
+  <!-- STREAK -->
+  <div class="card">
+    <div class="card-title">🔥 연속 학습 · 連續學習</div>
+    <div class="streak-count">
+      <div class="streak-fire">🔥</div>
+      <div><div class="streak-num" id="streak-num">0</div><div class="streak-label">連續天數</div></div>
+      <div style="margin-left:16px"><div class="streak-num" id="total-days-num" style="color:var(--teal2)">0</div><div class="streak-label">累積天數</div></div>
     </div>
+    <div class="streak-bar" id="streak-bar"></div>
+  </div>
 
-    <!-- WEEK -->
-    <div id="page-week" class="page">
-      <div class="page-title">주간 계획 · 週曆安排</div>
-      <div class="page-sub">點選日期查看詳細任務與讀法</div>
-      <div class="week-card-grid" id="week-cards"></div>
-      <div id="week-detail"></div>
+  <div id="warn-area"></div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="quick-btns">
+    <button class="quick-btn" onclick="quickEvent('練舞')">💃 今晚練舞</button>
+    <button class="quick-btn" onclick="quickEvent('聚餐')">🍽 臨時聚餐</button>
+    <button class="quick-btn" onclick="quickEvent('加班')">💼 需要加班</button>
+    <button class="quick-btn" onclick="quickEvent('很累')">😮‍💨 今天很累</button>
+    <button class="quick-btn" onclick="quickEvent('生病')">🤒 身體不舒服</button>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <span style="font-size:13px;color:var(--text2)">今天可以讀</span>
+    <input type="number" id="avail" value="60" min="10" max="240" style="width:72px">
+    <span style="font-size:13px;color:var(--text2)">分鐘</span>
+    <button class="btn btn-teal btn-sm" onclick="generateToday()">產生計畫 ↗</button>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num" id="s-done">0</div><div class="stat-label">완료 Done</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-total">0</div><div class="stat-label">전체 Total</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-pct">0%</div><div class="stat-label">달성률 Rate</div></div>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+  <div class="card"><div id="task-list"><div style="color:var(--text3);font-size:14px;padding:1rem;text-align:center">輸入分鐘數，按「產生計畫」</div></div></div>
+  <div id="extra-tip"></div>
+</div>
+
+<!-- TIMER -->
+<div id="page-timer" class="page">
+  <div class="page-title">읽기 타이머</div>
+  <div class="page-title-kr">STUDY TIMER</div>
+  <div class="timer-card">
+    <div>
+      <div class="timer-display" id="timer-display">00:00</div>
+      <div class="timer-label" id="timer-label">準備開始</div>
     </div>
-
-    <!-- MONTH -->
-    <div id="page-month" class="page">
-      <div class="page-title">월간 달력 · 月曆視圖</div>
-      <div class="page-sub">查看整個月的學習狀況</div>
-      <div class="month-nav">
-        <button class="btn btn-sm" onclick="changeMonth(-1)">← 上個月</button>
-        <span class="month-label" id="month-label"></span>
-        <button class="btn btn-sm" onclick="changeMonth(1)">下個月 →</button>
-      </div>
-      <div class="card">
-        <div class="cal-header">
-          <div class="cal-head">一</div><div class="cal-head">二</div><div class="cal-head">三</div>
-          <div class="cal-head">四</div><div class="cal-head">五</div>
-          <div class="cal-head" style="color:var(--teal2)">六</div>
-          <div class="cal-head" style="color:var(--pink)">日</div>
-        </div>
-        <div class="cal-grid" id="cal-grid"></div>
-      </div>
-      <div class="card" id="month-stats">
-        <div class="card-title">本月統計</div>
-        <div id="month-stat-content"></div>
-      </div>
-      <!-- WEEKLY SCHEDULE OVERVIEW -->
-      <div class="card">
-        <div class="card-title">週計畫卡片</div>
-        <div id="week-plan-cards"></div>
-      </div>
+    <div class="timer-btns">
+      <button class="btn btn-teal btn-sm" id="timer-start-btn" onclick="timerStart()">▶ 開始</button>
+      <button class="btn btn-sm" onclick="timerPause()" id="timer-pause-btn" style="display:none">⏸ 暫停</button>
+      <button class="btn btn-sm" onclick="timerReset()">↺ 重置</button>
     </div>
-
-    <!-- REVIEW -->
-    <div id="page-review" class="page">
-      <div class="page-title">복습 계획 · 複習計畫</div>
-      <div class="page-sub">間隔重複自動排入，不需要自己記</div>
-      <div class="card">
-        <div class="card-title">매일 복습 · 每日複習</div>
-        <div class="task-row"><div class="task-body">
-          <div class="task-name">아침 통근 · 早上通勤（20-30分）</div>
-          <div class="task-method open">✦ 英文：Anki刷昨天的單字，蓋住中文自己說出來<br>✦ 韓文：TTMIK Podcast，純聽不需要筆記<br>✦ 不要在通勤時看書，效率很低</div>
-        </div><div class="task-meta"><span class="badge b-gray">통근</span></div></div>
-        <div class="task-row"><div class="task-body">
-          <div class="task-name">자기 전 · 睡前（10分）</div>
-          <div class="task-method open">✦ 快速掃今天的韓文文型，例句唸一遍<br>✦ 今天的英文單字蓋住中文再測一次<br>✦ 這步決定明天記得多少，不能跳過</div>
-        </div><div class="task-meta"><span class="badge b-gray">자기전</span></div></div>
-      </div>
-      <div class="card">
-        <div class="card-title">간격 반복 · 間隔重複時間表</div>
-        <div id="spaced-table"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">교재별 학습법 · 各書本詳細讀法</div>
-        <div id="method-list"></div>
-      </div>
+  </div>
+  <div class="card">
+    <div class="card-title">設定讀書時間</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-sm" onclick="setTimer(15)">15分</button>
+      <button class="btn btn-sm" onclick="setTimer(20)">20分</button>
+      <button class="btn btn-sm" onclick="setTimer(25)">25分（番茄鐘）</button>
+      <button class="btn btn-sm" onclick="setTimer(30)">30分</button>
+      <button class="btn btn-sm" onclick="setTimer(45)">45分</button>
+      <button class="btn btn-sm" onclick="setTimer(60)">60分</button>
     </div>
+  </div>
+  <div class="card">
+    <div class="card-title">今日讀書記錄</div>
+    <div id="timer-log"><div style="color:var(--text3);font-size:13px">還沒有記錄</div></div>
+  </div>
+</div>
 
-    <!-- BOOST -->
-    <div id="page-boost" class="page">
-      <div class="page-title">가속 계산 · 加速計算</div>
-      <div class="page-sub">今天多讀幾分鐘，可以提前幾天完成目標？</div>
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-          <span style="font-size:13px;color:var(--text2)">平時每天</span>
-          <input type="number" id="base-mins" value="60" min="10" max="180" style="width:72px">
-          <span style="font-size:13px;color:var(--text2)">分鐘，今天讀</span>
-          <input type="number" id="boost-mins" value="90" min="10" max="300" style="width:72px">
-          <span style="font-size:13px;color:var(--text2)">分鐘</span>
-          <button class="btn btn-teal btn-sm" onclick="calcBoost()">計算 ↗</button>
-        </div>
-        <div id="boost-result"></div>
+<!-- FLASHCARDS -->
+<div id="page-cards" class="page">
+  <div class="page-title">단어 카드</div>
+  <div class="page-title-kr">FLASHCARDS</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <select id="fc-lang-filter" onchange="fcLoad()" style="padding:7px 12px;font-size:13px">
+      <option value="all">全部單字</option>
+      <option value="en">英文單字</option>
+      <option value="kr">韓文單字</option>
+    </select>
+    <select id="fc-mode" style="padding:7px 12px;font-size:13px">
+      <option value="all">全部練習</option>
+      <option value="weak">只練不熟的</option>
+    </select>
+    <button class="btn btn-teal btn-sm" onclick="fcStart()">開始練習 ↗</button>
+  </div>
+  <div id="fc-area">
+    <div class="fc-progress" id="fc-prog"></div>
+    <div class="fc-card" id="fc-card" onclick="fcFlip()">
+      <div class="fc-front" id="fc-front">點「開始練習」</div>
+      <div class="fc-sub" id="fc-sub">選擇語言和模式後開始</div>
+      <div class="fc-back" id="fc-back">
+        <div class="fc-meaning" id="fc-meaning"></div>
+        <div class="fc-example" id="fc-example"></div>
       </div>
-      <div class="card">
-        <div class="card-title">12개월 계획 · 12個月總覽</div>
-        <div id="month-timeline"></div>
-      </div>
+      <div class="fc-hint">點擊翻面 →</div>
     </div>
-
-    <!-- BOOKS -->
-    <div id="page-books" class="page">
-      <div class="page-title">교재 관리 · 書本管理</div>
-      <div class="page-sub">填入頁數後計畫自動更新，可以隨時新增書本</div>
-      <div id="book-list-form"></div>
-      <button class="btn btn-sm" onclick="toggleAddBook()" id="add-btn" style="margin-top:8px">＋ 新增一本書</button>
-      <div class="card" id="add-book-form" style="display:none;margin-top:12px">
-        <div class="card-title">新增書本</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <div><div class="field-lbl" style="margin-bottom:4px">書名</div><input type="text" id="nb-name" placeholder="書名" style="width:100%"></div>
-          <div><div class="field-lbl" style="margin-bottom:4px">語言</div><select id="nb-lang" style="width:100%"><option value="en">英文</option><option value="kr">韓文</option><option value="topik">TOPIK</option></select></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
-          <div><div class="field-lbl" style="margin-bottom:4px">類型</div><select id="nb-type" style="width:100%"><option value="grammar">文法</option><option value="vocab">單字</option><option value="exam">題庫</option><option value="listen">聽力</option><option value="write">寫作</option></select></div>
-          <div><div class="field-lbl" style="margin-bottom:4px">每天讀幾頁/個</div><input type="number" id="nb-daily" value="5" min="1" style="width:100%"></div>
-          <div><div class="field-lbl" style="margin-bottom:4px">幾個月後開始</div><input type="number" id="nb-start" value="0" min="0" max="11" style="width:100%"></div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-teal btn-sm" onclick="addBook()">加入書單</button>
-          <button class="btn btn-sm" onclick="toggleAddBook()">取消</button>
-        </div>
-      </div>
+    <div class="fc-result" id="fc-result" style="display:none">
+      <button class="btn btn-sm" style="background:var(--red-dim);color:var(--red);border-color:rgba(192,57,43,0.3)" onclick="fcResult(false)">✗ 不熟</button>
+      <button class="btn btn-sm" style="background:var(--amber-light);color:var(--amber);border-color:rgba(184,122,45,0.3)" onclick="fcResult(null)">△ 還好</button>
+      <button class="btn btn-sm" style="background:var(--teal-light);color:var(--teal);border-color:rgba(45,122,95,0.3)" onclick="fcResult(true)">✓ 記住了</button>
     </div>
-
-    <!-- RULES -->
-    <div id="page-rules" class="page">
-      <div class="page-title">나의 규칙 · 我的規定</div>
-      <div class="page-sub">設定每日最低讀書時間，違規會收到警告</div>
-      <div class="card">
-        <div class="card-title">최소 학습 시간 · 最低規定</div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-          <span style="font-size:13px;color:var(--text2)">平日最少讀</span>
-          <input type="number" id="min-weekday" value="40" min="10" max="180" style="width:72px">
-          <span style="font-size:13px;color:var(--text2)">分鐘</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-          <span style="font-size:13px;color:var(--text2)">假日最少讀</span>
-          <input type="number" id="min-weekend" value="30" min="10" max="180" style="width:72px">
-          <span style="font-size:13px;color:var(--text2)">分鐘（有課也要讀）</span>
-        </div>
-        <button class="btn btn-teal btn-sm" onclick="saveRules()">儲存規定</button>
-      </div>
-      <div class="card">
-        <div class="card-title">학습 기록 · 學習記錄</div>
-        <div id="log-list"><div style="font-size:13px;color:var(--text3)">完成今日計畫後會自動記錄</div></div>
-      </div>
+    <div class="fc-nav" id="fc-nav" style="display:none">
+      <button class="btn btn-sm" onclick="fcPrev()">← 上一個</button>
+      <button class="btn btn-sm" onclick="fcNext()">下一個 →</button>
     </div>
+  </div>
+  <div class="card" style="margin-top:8px">
+    <div class="card-title" style="cursor:pointer" onclick="toggleFcAdd()">＋ 新增單字</div>
+    <div id="fc-add-form" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="fc-field"><label>語言</label><select id="fc-add-lang" style="width:100%"><option value="en">英文</option><option value="kr">韓文</option></select></div>
+        <div class="fc-field"><label>單字/詞</label><input type="text" id="fc-add-word" placeholder="e.g. profitable" style="width:100%"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="fc-field"><label>中文意思</label><input type="text" id="fc-add-meaning" placeholder="有利可圖的" style="width:100%"></div>
+        <div class="fc-field"><label>詞性</label><input type="text" id="fc-add-pos" placeholder="adj." style="width:100%"></div>
+      </div>
+      <div class="fc-field"><label>例句</label><input type="text" id="fc-add-ex" placeholder="a profitable business" style="width:100%"></div>
+      <button class="btn btn-teal btn-sm" onclick="fcAddWord()" style="margin-top:10px">加入單字庫</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">我的單字庫 <span id="fc-count" style="font-size:11px;color:var(--text3);font-weight:400"></span></div>
+    <div id="fc-list"></div>
+  </div>
+</div>
 
-  </main>
+<!-- WEEK -->
+<div id="page-week" class="page">
+  <div class="page-title">주간 계획</div>
+  <div class="page-title-kr">WEEKLY PLAN</div>
+  <div class="week-card-grid" id="week-cards"></div>
+  <div id="week-detail"></div>
+</div>
+
+<!-- MONTH -->
+<div id="page-month" class="page">
+  <div class="page-title">월간 달력</div>
+  <div class="page-title-kr">MONTHLY CALENDAR</div>
+  <div class="month-nav">
+    <button class="btn btn-sm" onclick="changeMonth(-1)">← 上個月</button>
+    <span class="month-label" id="month-label"></span>
+    <button class="btn btn-sm" onclick="changeMonth(1)">下個月 →</button>
+  </div>
+  <div class="card">
+    <div class="cal-header">
+      <div class="cal-head">一</div><div class="cal-head">二</div><div class="cal-head">三</div>
+      <div class="cal-head">四</div><div class="cal-head">五</div>
+      <div class="cal-head" style="color:var(--teal)">六</div>
+      <div class="cal-head" style="color:var(--pink)">日</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+  <div class="card" id="month-stats"></div>
+</div>
+
+<!-- REVIEW -->
+<div id="page-review" class="page">
+  <div class="page-title">복습 계획</div>
+  <div class="page-title-kr">REVIEW PLAN</div>
+  <div class="card">
+    <div class="card-title">매일 복습 · 每日固定複習</div>
+    <div class="task-row"><div class="task-body">
+      <div class="task-name">早上通勤（20-30分）</div>
+      <div class="task-method open">✦ 英文：用App或書本刷昨天的單字，蓋住中文自己說<br>✦ 韓文：TTMIK Podcast，純耳朵輸入，不需要筆記<br>✦ 不要在通勤時看書，站著翻書效率低</div>
+    </div></div>
+    <div class="task-row"><div class="task-body">
+      <div class="task-name">睡前（10分）</div>
+      <div class="task-method open">✦ 掃今天的韓文文型，例句唸一遍<br>✦ 今天的英文單字蓋住中文再測一次<br>✦ 這步決定明天記得多少，不能跳過！</div>
+    </div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">간격 반복 · 間隔重複時間表</div>
+    <div class="boost-row"><span style="font-size:13px;color:var(--text2)">當天睡前</span><span style="font-size:13px">快速掃今天所有新字/文型</span></div>
+    <div class="boost-row"><span style="font-size:13px;color:var(--text2)">隔天通勤</span><span style="font-size:13px">複習昨天的</span></div>
+    <div class="boost-row"><span style="font-size:13px;color:var(--text2)">第3天</span><span style="font-size:13px">只複習不熟的</span></div>
+    <div class="boost-row"><span style="font-size:13px;color:var(--text2)">第7天</span><span style="font-size:13px">全部再過一遍</span></div>
+    <div class="boost-row"><span style="font-size:13px;color:var(--text2)">第30天</span><span style="font-size:13px">月總複習</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title">각 교재별 학습법 · 各書本讀法</div>
+    <div id="method-list"></div>
+  </div>
+</div>
+
+<!-- REPORT -->
+<div id="page-report" class="page">
+  <div class="page-title">주간 보고서</div>
+  <div class="page-title-kr">WEEKLY REPORT</div>
+  <div id="report-content"></div>
+</div>
+
+<!-- BOOST -->
+<div id="page-boost" class="page">
+  <div class="page-title">가속 계산</div>
+  <div class="page-title-kr">ACCELERATION CALCULATOR</div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:13px;color:var(--text2)">平時每天</span>
+      <input type="number" id="base-mins" value="60" min="10" max="180" style="width:72px">
+      <span style="font-size:13px;color:var(--text2)">分，今天讀</span>
+      <input type="number" id="boost-mins" value="90" min="10" max="300" style="width:72px">
+      <span style="font-size:13px;color:var(--text2)">分</span>
+      <button class="btn btn-teal btn-sm" onclick="calcBoost()">計算 ↗</button>
+    </div>
+    <div id="boost-result"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">12개월 계획 · 12個月總覽</div>
+    <div id="month-timeline"></div>
+  </div>
+</div>
+
+<!-- BOOKS -->
+<div id="page-books" class="page">
+  <div class="page-title">교재 관리</div>
+  <div class="page-title-kr">BOOK MANAGEMENT</div>
+  <div class="notice">回家後把每本書翻到最後一頁，填入頁數，計畫就會精確到「今天第X頁到第Y頁」</div>
+  <div id="book-list-form"></div>
+  <button class="btn btn-sm" onclick="toggleAddBook()" id="add-btn" style="margin-top:8px">＋ 新增一本書</button>
+  <div class="card" id="add-book-form" style="display:none;margin-top:12px">
+    <div class="card-title">新增書本</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div><div style="font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:600">書名</div><input type="text" id="nb-name" placeholder="書名" style="width:100%"></div>
+      <div><div style="font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:600">語言</div><select id="nb-lang" style="width:100%"><option value="en">英文</option><option value="kr">韓文</option><option value="topik">TOPIK</option></select></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+      <div><div style="font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:600">類型</div><select id="nb-type" style="width:100%"><option value="grammar">文法</option><option value="vocab">單字</option><option value="exam">題庫</option><option value="listen">聽力</option><option value="write">寫作</option></select></div>
+      <div><div style="font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:600">每天讀幾頁</div><input type="number" id="nb-daily" value="5" min="1" style="width:100%"></div>
+      <div><div style="font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:600">幾個月後開始</div><input type="number" id="nb-start" value="0" min="0" max="11" style="width:100%"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-teal btn-sm" onclick="addBook()">加入書單</button>
+      <button class="btn btn-sm" onclick="toggleAddBook()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- RULES -->
+<div id="page-rules" class="page">
+  <div class="page-title">나의 규칙</div>
+  <div class="page-title-kr">MY RULES</div>
+  <div class="card">
+    <div class="card-title">최소 학습 시간 · 每日最低規定</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <span style="font-size:13px;color:var(--text2)">平日最少讀</span>
+      <input type="number" id="min-weekday" value="40" min="10" max="180" style="width:72px">
+      <span style="font-size:13px;color:var(--text2)">分鐘</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+      <span style="font-size:13px;color:var(--text2)">假日最少讀</span>
+      <input type="number" id="min-weekend" value="30" min="10" max="180" style="width:72px">
+      <span style="font-size:13px;color:var(--text2)">分鐘（有課也要）</span>
+    </div>
+    <button class="btn btn-teal btn-sm" onclick="saveRules()" id="save-rules-btn">儲存規定</button>
+  </div>
+  <div class="card">
+    <div class="card-title">학습 기록 · 學習記錄（近30天）</div>
+    <div id="log-list"><div style="font-size:13px;color:var(--text3)">完成今日計畫後會自動記錄</div></div>
+  </div>
+</div>
+
+</main>
 </div>
 
 <script>
 // ══════════════════════════════════════
-// ⚙️  FIREBASE 設定區塊
-// 請把你的 Firebase 設定貼在這裡
+// ⚙️ FIREBASE CONFIG
 // ══════════════════════════════════════
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBeGd-Kbl67Z2MmCtx6g673WJhui8T81-s",
@@ -554,79 +596,52 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "284047295587",
   appId: "1:284047295587:web:7db2188e96774b9d5ba456"
 };
-// ══════════════════════════════════════
 
-// ── INIT FIREBASE ──
 let db, auth, currentUser;
-const firebaseReady = FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY";
-
-if(firebaseReady){
-  firebase.initializeApp(FIREBASE_CONFIG);
-  auth = firebase.auth();
-  db = firebase.firestore();
-  auth.onAuthStateChanged(user => {
-    if(user){ currentUser = user; showApp(user); }
-    else { document.getElementById('login-screen').style.display='flex'; document.getElementById('app').style.display='none'; }
-  });
-} else {
-  // Dev mode: skip login
-  setTimeout(()=>{
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='flex';
-    document.getElementById('user-name-display').textContent='demo mode';
-    loadState(); initApp();
-  },300);
-}
+firebase.initializeApp(FIREBASE_CONFIG);
+auth = firebase.auth();
+db = firebase.firestore();
+auth.onAuthStateChanged(user => {
+  if(user){ currentUser=user; showApp(user); }
+  else { document.getElementById('login-screen').style.display='flex'; document.getElementById('app').style.display='none'; }
+});
 
 function signInGoogle(){
-  if(!firebaseReady){ alert('請先設定 Firebase 設定碼！\n請看說明文件。'); return; }
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(e=>alert('登入失敗：'+e.message));
+  const p = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(p).catch(e=>alert('登入失敗：'+e.message));
 }
+function signOut(){ auth.signOut(); }
 
-function signOut(){
-  if(auth) auth.signOut();
-  else { document.getElementById('login-screen').style.display='flex'; document.getElementById('app').style.display='none'; }
-}
-
-function showApp(user){
+async function showApp(user){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
-  document.getElementById('user-name-display').textContent = user.displayName||user.email||'';
-  loadState();
+  document.getElementById('user-display').textContent = user.displayName||user.email||'';
+  await loadState();
   initApp();
 }
 
-// ── SAVE / LOAD ──
+// ── SAVE/LOAD ──
 async function saveState(){
-  const data = { books: state.books, rules: state.rules, logs: state.logs, idolIdx: state.idolIdx };
-  if(db && currentUser){
-    try{ await db.collection('users').doc(currentUser.uid).set(data, {merge:true}); }catch(e){}
-  } else {
-    try{ localStorage.setItem('study_v3', JSON.stringify(data)); }catch(e){}
-  }
+  const data={ books:state.books, rules:state.rules, logs:state.logs, idolIdx:state.idolIdx, flashcards:state.flashcards, timerLogs:state.timerLogs };
+  if(db&&currentUser){ try{ await db.collection('users').doc(currentUser.uid).set(data,{merge:true}); }catch(e){} }
+  else { try{ localStorage.setItem('study_v3',JSON.stringify(data)); }catch(e){} }
 }
-
 async function loadState(){
-  let data = null;
-  if(db && currentUser){
-    try{
-      const doc = await db.collection('users').doc(currentUser.uid).get();
-      if(doc.exists) data = doc.data();
-    }catch(e){}
-  } else {
-    try{ const s=localStorage.getItem('study_v3'); if(s) data=JSON.parse(s); }catch(e){}
-  }
+  let data=null;
+  if(db&&currentUser){ try{ const d=await db.collection('users').doc(currentUser.uid).get(); if(d.exists)data=d.data(); }catch(e){} }
+  else { try{ const s=localStorage.getItem('study_v3'); if(s)data=JSON.parse(s); }catch(e){} }
   if(data){
-    if(data.books?.length) state.books = data.books;
-    if(data.rules) state.rules = data.rules;
-    if(data.logs) state.logs = data.logs;
-    if(data.idolIdx != null) state.idolIdx = data.idolIdx;
+    if(data.books?.length) state.books=data.books;
+    if(data.rules) state.rules=data.rules;
+    if(data.logs) state.logs=data.logs;
+    if(data.idolIdx!=null) state.idolIdx=data.idolIdx;
+    if(data.flashcards) state.flashcards=data.flashcards;
+    if(data.timerLogs) state.timerLogs=data.timerLogs;
   }
 }
 
-// ── DATA ──
-const DEFAULT_BOOKS = [
+// ── DEFAULT DATA ──
+const DEFAULT_BOOKS=[
   {id:'azar',name:'AZAR英文文法',lang:'en',unit:'頁',total:0,current:0,daily:4,startMonth:0,type:'grammar',active:true},
   {id:'toeic_v',name:'新制多益單字大全',lang:'en',unit:'個',total:0,current:0,daily:15,startMonth:0,type:'vocab',active:true},
   {id:'toeic_r',name:'新制多益閱讀題庫',lang:'en',unit:'頁',total:0,current:0,daily:8,startMonth:6,type:'exam',active:true},
@@ -637,116 +652,58 @@ const DEFAULT_BOOKS = [
   {id:'kr_v',name:'韓文心智圖詞彙',lang:'kr',unit:'個',total:0,current:0,daily:10,startMonth:0,type:'vocab',active:true},
   {id:'topik_w',name:'TOPIK寫作基本功',lang:'topik',unit:'頁',total:0,current:0,daily:5,startMonth:4,type:'write',active:true},
 ];
-
-const METHODS = {
-  grammar:`① 先讀規則，不急著做題目\n② 用自己的話把規則寫一遍（中文也行）\n③ 看例句，標出句子結構（主詞/動詞/受詞）\n④ 做練習題，完成後馬上對答案\n⑤ 錯的題：回去看為什麼錯，規則再讀一次\n⑥ 用這個文法和自己的生活造3個句子`,
-  vocab:`① 每個單字唸出來3遍\n② 蓋住中文，看英/韓文，自己說出意思\n③ 蓋住英/韓文，看中文，說出來\n④ 連同詞性＋例句一起記（最重要！）\n⑤ 不熟的字加入Anki，通勤時複習`,
-  exam:`① 計時做題（模擬考試，不偷看）\n② 對答案，圈出錯的題\n③ 錯題文章重讀，找出為什麼錯\n④ 不懂的單字抄下來，隔天加入Anki\n⑤ 同題型錯超過3次：專項加強`,
-  listen:`① 第一遍：只聽，做題\n② 對答案\n③ 第二遍：一邊看逐字稿一邊聽\n④ 第三遍：跟著逐字稿大聲唸（Shadowing）\n⑤ Shadowing：和原音同步說出，跟不上是正常的`,
-  write:`① 看範文，分析結構（開頭/中間/結尾）\n② 蓋住範文，自己寫一遍\n③ 打開範文對照，找出少用的句型\n④ 把那些句型抄下來，造句練習\n⑤ 一週後再寫同類題型，看進步了嗎`,
+const METHODS={
+  grammar:'① 先讀規則，不急著做題\n② 用自己的話把規則寫一遍（中文也行）\n③ 看例句，標出句子結構（主詞/動詞/受詞）\n④ 做練習題，完成後馬上對答案\n⑤ 錯的題：回去看為什麼錯，規則再讀一次\n⑥ 用這個文法造3個和自己生活有關的句子',
+  vocab:'① 每個單字唸出來3遍\n② 蓋住中文，看英/韓文，自己說出意思\n③ 蓋住英/韓文，看中文，說出來\n④ 連同詞性＋例句一起記（最重要！）\n⑤ 不熟的字標記，下次優先複習',
+  exam:'① 計時做題（模擬考試，不偷看）\n② 對答案，圈出錯的題\n③ 錯題文章重讀，找出為什麼錯\n④ 不懂的單字加入單字庫\n⑤ 同題型錯超過3次：專項加強',
+  listen:'① 第一遍：只聽，做題\n② 對答案\n③ 第二遍：一邊看逐字稿一邊聽\n④ 第三遍：跟著逐字稿大聲唸（Shadowing）',
+  write:'① 看範文，分析結構（開頭/中間/結尾）\n② 蓋住範文，自己寫一遍\n③ 打開範文對照，找出少用的句型\n④ 把那些句型抄下來造句\n⑤ 一週後再寫同類題型看進步',
 };
-
-const IDOLS = [
-  {name:'梁禎元 · ENHYPEN',tag:'ENHYPEN · 양정원',
-   kr:['노력은 배신하지 않아.\n오늘도 최선을 다하자.','어제보다 나은 오늘이\n이미 성공이야.','힘들어도 포기하지 마.\n언젠가 빛날 거야.'],
-   tw:['努力不會背叛你。今天也要盡力。','比昨天更好的今天，已經是成功了。','就算很累也不要放棄，總有一天會發光。']},
-  {name:'朴志晟 · NCT DREAM',tag:'NCT DREAM · 박지성',
-   kr:['작은 노력도 쌓이면\n큰 변화가 돼.','오늘 30분도\n0분보다 100배 낫잖아.','꿈은 기다려주지 않아,\n행동으로 따라잡자.'],
-   tw:['小小的努力累積起來就是大大的改變。','今天30分鐘也比0分鐘好100倍。','夢想不會等你，用行動追上它。']},
-  {name:'TXT',tag:'TOMORROW X TOGETHER',
-   kr:['불완전한 노력이\n완벽한 게으름보다 의미있어.','복잡한 세상에서\n네 목표는 하나야.','오늘의 혼돈이\n최고의 너를 만들고 있어.'],
-   tw:['不完美的努力，比完美的懈怠更有意義。','複雜的世界裡，你的目標只有一個。','今天的混沌，正在塑造最好的你。']},
-  {name:'BOYNEXTDOOR',tag:'BND · 보이넥스트도어',
-   kr:['매일 조금씩,\n쌓이면 대단해져.','오늘 노력한 네가\n내일의 더 나은 너야.','완벽하지 않아도 돼,\n매일 성장하면 충분해.'],
-   tw:['每天一點點，累積起來就很厲害。','今天努力的你，就是明天更好的你。','不用完美，每天成長就夠了。']},
-  {name:'徐竟培',tag:'서경배 · CLOSE YOUR EYES',
-   kr:['낮에는 일하고\n밤에는 공부하는 네가 대단해.','월급 뒤에는 노력이 있고,\n공부 뒤에는 미래가 있어.','눈을 감고, 다시 뜨고,\n계속 공부해.'],
-   tw:['白天工作、晚上讀書的你，真的很了不起。','薪水背後是努力，讀書背後是未來。','閉上眼，再睜開，繼續讀書。']},
+const IDOLS=[
+  {name:'梁禎元 · ENHYPEN',tag:'ENHYPEN · 양정원',kr:['노력은 배신하지 않아.\n오늘도 최선을 다하자.','어제보다 나은 오늘이\n이미 성공이야.','힘들어도 포기하지 마.\n언젠가 빛날 거야.','조금씩 해도 괜찮아.\n멈추지 않으면 돼.'],tw:['努力不會背叛你。今天也要盡力。','比昨天更好的今天，已經是成功了。','就算很累也不要放棄，總有一天會發光。','一點一點也沒關係，不要停下來就好。']},
+  {name:'朴志晟 · NCT DREAM',tag:'NCT DREAM · 박지성',kr:['작은 노력도 쌓이면\n큰 변화가 돼.','오늘 30분도\n0분보다 100배 낫잖아.','꿈은 기다려주지 않아,\n행동으로 따라잡자.','포기하지 마,\n지금 잘 하고 있어.'],tw:['小小的努力累積起來就是大大的改變。','今天30分鐘也比0分鐘好100倍。','夢想不會等你，用行動追上它。','不要放棄，你現在做得很好。']},
+  {name:'TXT',tag:'TOMORROW X TOGETHER',kr:['불완전한 노력이\n완벽한 게으름보다 의미있어.','복잡한 세상에서\n네 목표는 하나야.','오늘의 혼돈이\n최고의 너를 만들고 있어.','지금 힘든 게 당연해.\n그래서 더 의미있어.'],tw:['不完美的努力比完美的懈怠更有意義。','複雜的世界裡，你的目標只有一個。','今天的混沌，正在塑造最好的你。','現在覺得辛苦是正常的，所以更有意義。']},
+  {name:'BOYNEXTDOOR',tag:'BND · 보이넥스트도어',kr:['매일 조금씩,\n쌓이면 대단해져.','오늘 노력한 네가\n내일의 더 나은 너야.','완벽하지 않아도 돼,\n매일 성장하면 충분해.','할 수 있어, 넌 이미\n충분히 노력하고 있어.'],tw:['每天一點點，累積起來就很厲害。','今天努力的你，就是明天更好的你。','不用完美，每天成長就夠了。','你可以的，你已經夠努力了。']},
+  {name:'徐竟培',tag:'서경배 · CLOSE YOUR EYES',kr:['낮에는 일하고\n밤에는 공부하는 네가 대단해.','월급 뒤에는 노력이 있고,\n공부 뒤에는 미래가 있어.','눈을 감고, 다시 뜨고,\n계속 공부해.','열심히 일하고,\n열심히 배우는 너 최고야.'],tw:['白天工作、晚上讀書的你，真的很了不起。','薪水背後是努力，讀書背後是未來。','閉上眼，再睜開，繼續讀書。','努力工作又努力學習的你，最棒了。']},
 ];
-
-const WARN_KR = [
-  {kr:'시간이 없어도\n책은 펼쳐야 해!',tw:'沒時間也要打開書！通勤時間算進去試試？'},
+const WARN_KR=[
+  {kr:'시간이 없어도\n책은 펼쳐야 해!',tw:'沒時間也要打開書！通勤時間也算進去！'},
   {kr:'20분이라도 괜찮아.\n지금 당장 시작해!',tw:'就算只有20分鐘也OK，現在馬上開始！'},
-  {kr:'피곤해도\n조금만 더 버텨봐.',tw:'就算很累，再撐一下下。'},
+  {kr:'피곤해도\n조금만 더 버텨봐.',tw:'就算很累，再撐一下下。禎元說你可以的！'},
+];
+const WEEK_PLAN=[
+  {label:'週一',kr:'월요일',type:'w',note:'通勤+下班後',tasks:[{lang:'en',name:'英文單字（通勤複習）',detail:'翻書複習昨天的字',mins:15,type:'vocab'},{lang:'kr',name:'韓文Podcast（通勤）',detail:'TTMIK，純聽',mins:10,type:'listen'},{lang:'en',name:'英文文法1單元',detail:'AZAR，讀規則→例句→造3句',mins:20,type:'grammar'},{lang:'kr',name:'韓文文型1個',detail:'KOREA grammar，文型+例句+造3句',mins:20,type:'grammar'}]},
+  {label:'週二',kr:'화요일',type:'w',note:'通勤+下班後',tasks:[{lang:'en',name:'英文單字15個（新字）',detail:'多益單字大全',mins:15,type:'vocab'},{lang:'kr',name:'韓文Podcast',detail:'TTMIK',mins:10,type:'listen'},{lang:'en',name:'英文閱讀練習',detail:'短文，計時5分鐘',mins:20,type:'exam'},{lang:'kr',name:'韓文單字10個',detail:'心智圖詞彙，字根→延伸字',mins:15,type:'vocab'}]},
+  {label:'週三',kr:'수요일',type:'w',note:'通勤+下班後',tasks:[{lang:'en',name:'英文單字複習',detail:'複習這週所有英文字',mins:15,type:'vocab'},{lang:'en',name:'英文文法1單元',detail:'AZAR',mins:20,type:'grammar'},{lang:'kr',name:'韓文跟讀',detail:'TTMIK，Shadowing跟著唸',mins:20,type:'listen'}]},
+  {label:'週四',kr:'목요일',type:'w',note:'通勤+下班後',tasks:[{lang:'en',name:'英文單字15個',detail:'多益單字大全',mins:15,type:'vocab'},{lang:'kr',name:'韓文文型複習',detail:'本週文型各造新句子',mins:15,type:'grammar'},{lang:'en',name:'英文口說跟讀',detail:'BBC Learning English',mins:15,type:'listen'}]},
+  {label:'週五',kr:'금요일',type:'w',note:'通勤+下班後',tasks:[{lang:'en',name:'英文本週單字總複習',detail:'蓋住中文全部說一遍',mins:20,type:'vocab'},{lang:'kr',name:'韓文會話練習',detail:'用本週文型說5句話',mins:20,type:'grammar'},{lang:'en',name:'英文文法1單元',detail:'AZAR',mins:20,type:'grammar'}]},
+  {label:'週六',kr:'토요일',type:'we',note:'課間+回家後',tasks:[{lang:'en',name:'課間：英文單字',detail:'課間休息複習',mins:15,type:'vocab'},{lang:'kr',name:'課間：韓文聽力',detail:'TTMIK',mins:15,type:'listen'},{lang:'en',name:'回家：AZAR複習',detail:'學校上課內容複習',mins:20,type:'grammar'},{lang:'kr',name:'回家：韓文文型2個',detail:'KOREA grammar',mins:25,type:'grammar'}]},
+  {label:'週日',kr:'일요일',type:'we',note:'假日彈性',tasks:[{lang:'kr',name:'韓文閱讀練習',detail:'短文，試著翻譯',mins:20,type:'exam'},{lang:'en',name:'英文Shadowing',detail:'跟讀15分鐘',mins:20,type:'listen'},{lang:'kr',name:'韓文本週文型總複習',detail:'每個文型造新句子',mins:20,type:'grammar'},{lang:'en',name:'英文本週單字測驗',detail:'蓋住中文全說一遍',mins:15,type:'vocab'}]},
+];
+const MONTHS_PLAN=[
+  {m:'第1-2個月',en:'AZAR基礎 + 單字15個/天',kr:'低級文法 + 單字',pct:17,focus:'건강한 습관 · 建立習慣'},
+  {m:'第3-4個月',en:'AZAR繼續 + 單字',kr:'低級收尾 → 中級',pct:33,focus:'기초 다지기 · 鞏固基礎'},
+  {m:'第5-6個月',en:'AZAR中級',kr:'中級 + TOPIK寫作',pct:50,focus:'중급 돌입 · 進入中階'},
+  {m:'第7-9個月',en:'多益閱讀+聽力題庫',kr:'中級收尾 → 高級',pct:75,focus:'시험 준비 · 考試準備'},
+  {m:'第10-12個月',en:'多益模擬考',kr:'高級 + TOPIK模擬',pct:100,focus:'최종 스퍼트 · 最終衝刺'},
 ];
 
-const WEEK_PLAN = [
-  {label:'週一',kr:'월요일',type:'w',note:'通勤+下班後',tasks:[
-    {lang:'en',name:'英文單字（通勤Anki）',detail:'多益單字大全，通勤刷昨天的字',mins:15,type:'vocab'},
-    {lang:'kr',name:'韓文Podcast（通勤）',detail:'TTMIK，純耳朵輸入',mins:10,type:'listen'},
-    {lang:'en',name:'英文文法1單元',detail:'AZAR，讀規則→例句→造3句',mins:20,type:'grammar'},
-    {lang:'kr',name:'韓文文型1個',detail:'KOREA grammar，文型+例句+造句3個',mins:20,type:'grammar'},
-  ]},
-  {label:'週二',kr:'화요일',type:'w',note:'通勤+下班後',tasks:[
-    {lang:'en',name:'英文單字（通勤新字）',detail:'多益單字大全，今天15個新字',mins:15,type:'vocab'},
-    {lang:'kr',name:'韓文Podcast',detail:'TTMIK',mins:10,type:'listen'},
-    {lang:'en',name:'英文閱讀練習',detail:'短文，計時5分鐘，找不懂的字',mins:20,type:'exam'},
-    {lang:'kr',name:'韓文單字10個',detail:'心智圖詞彙，字根→延伸字一起記',mins:15,type:'vocab'},
-  ]},
-  {label:'週三',kr:'수요일',type:'w',note:'通勤+下班後',tasks:[
-    {lang:'en',name:'英文單字（通勤複習）',detail:'Anki複習這週所有英文字',mins:15,type:'vocab'},
-    {lang:'en',name:'英文文法1單元',detail:'AZAR',mins:20,type:'grammar'},
-    {lang:'kr',name:'韓文聽力跟讀',detail:'TTMIK一集，Shadowing跟著唸',mins:20,type:'listen'},
-  ]},
-  {label:'週四',kr:'목요일',type:'w',note:'通勤+下班後',tasks:[
-    {lang:'en',name:'英文單字15個',detail:'多益單字大全',mins:15,type:'vocab'},
-    {lang:'kr',name:'韓文文型複習',detail:'本週學的文型各造新句子',mins:15,type:'grammar'},
-    {lang:'en',name:'英文口說跟讀',detail:'BBC Learning English一段',mins:15,type:'listen'},
-  ]},
-  {label:'週五',kr:'금요일',type:'w',note:'通勤+下班後',tasks:[
-    {lang:'en',name:'英文本週單字總複習',detail:'所有新字蓋住中文自己說',mins:20,type:'vocab'},
-    {lang:'kr',name:'韓文會話練習',detail:'用本週文型說5句生活中的話',mins:20,type:'grammar'},
-    {lang:'en',name:'英文文法1單元',detail:'AZAR',mins:20,type:'grammar'},
-  ]},
-  {label:'週六',kr:'토요일',type:'we',note:'課間+回家後',tasks:[
-    {lang:'en',name:'課間：英文單字',detail:'課間刷Anki',mins:15,type:'vocab'},
-    {lang:'kr',name:'課間：韓文聽力',detail:'TTMIK耳機聽',mins:15,type:'listen'},
-    {lang:'en',name:'回家：AZAR複習學校進度',detail:'今天學校上課內容複習',mins:20,type:'grammar'},
-    {lang:'kr',name:'回家：韓文文型2個',detail:'KOREA grammar',mins:25,type:'grammar'},
-  ]},
-  {label:'週日',kr:'일요일',type:'we',note:'假日彈性時間',tasks:[
-    {lang:'kr',name:'韓文閱讀練習',detail:'短文閱讀，試著翻譯',mins:20,type:'exam'},
-    {lang:'en',name:'英文口說Shadowing',detail:'跟讀15分鐘',mins:20,type:'listen'},
-    {lang:'kr',name:'韓文本週文型總複習',detail:'每個文型造新句子',mins:20,type:'grammar'},
-    {lang:'en',name:'英文本週單字測驗',detail:'蓋住中文全部說一遍',mins:15,type:'vocab'},
-  ]},
-];
-
-const MONTHS_PLAN = [
-  {m:'第1-2個月',en:'AZAR基礎 + 單字15個/天',kr:'低級文法 + 單字',pct:17,focus:'건강한 습관'},
-  {m:'第3-4個月',en:'AZAR繼續 + 單字加量',kr:'低級收尾 → 中級',pct:33,focus:'기초 다지기'},
-  {m:'第5-6個月',en:'AZAR中級單元',kr:'中級文法 + TOPIK寫作',pct:50,focus:'중급 돌입'},
-  {m:'第7-9個月',en:'多益閱讀+聽力題庫',kr:'中級收尾 → 高級',pct:75,focus:'시험 준비'},
-  {m:'第10-12個月',en:'多益模擬考',kr:'高級 + TOPIK模擬考',pct:100,focus:'최종 스퍼트'},
-];
-
-const SPACED = [
-  {t:'當天睡前',a:'快速掃今天所有新字/文型一遍'},
-  {t:'隔天早上（通勤）',a:'Anki或翻書複習昨天的'},
-  {t:'第3天',a:'只複習不熟的（標記過的）'},
-  {t:'第7天',a:'全部再過一遍'},
-  {t:'第30天',a:'做一次月總複習'},
-];
-
-const state = {
-  books: JSON.parse(JSON.stringify(DEFAULT_BOOKS)),
-  tasks: [], doneSet: new Set(),
-  idolIdx: 0,
-  selDay: 0,
-  rules: { minWeekday:40, minWeekend:30 },
-  logs: [],
-  calYear: new Date().getFullYear(),
-  calMonth: new Date().getMonth(),
+const state={
+  books:JSON.parse(JSON.stringify(DEFAULT_BOOKS)),
+  tasks:[],doneSet:new Set(),
+  idolIdx:0,selDay:0,
+  rules:{minWeekday:40,minWeekend:30},
+  logs:[],
+  flashcards:[],
+  timerLogs:[],
+  calYear:new Date().getFullYear(),calMonth:new Date().getMonth(),
 };
-
-let currentMonth = 1;
+let currentMonth=1;
+let warnMode=false;
 
 function initApp(){
-  document.getElementById('today-date').textContent =
-    new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
-  state.selDay = new Date().getDay()===0?6:new Date().getDay()-1;
-  renderIdol();
-  renderRules();
+  state.selDay=new Date().getDay()===0?6:new Date().getDay()-1;
+  renderIdol();renderStreak();renderRules();
 }
 
 // ── NAV ──
@@ -754,125 +711,145 @@ function nav(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  const ids=['today','week','month','review','boost','books','rules'];
-  ids.forEach((m,i)=>{ if(m===id) document.querySelectorAll('.nav-item')[i].classList.add('active'); });
-  if(id==='week') renderWeek();
-  if(id==='month') renderMonth();
-  if(id==='review') renderReview();
-  if(id==='boost') renderBoost();
-  if(id==='books') renderBooks();
-  if(id==='rules') renderRules();
+  const ids=['today','timer','cards','week','month','review','report','boost','books','rules'];
+  ids.forEach((m,i)=>{if(m===id)document.querySelectorAll('.nav-item')[i].classList.add('active');});
+  if(id==='week')renderWeek();
+  if(id==='month')renderMonth();
+  if(id==='review')renderReview();
+  if(id==='report')renderReport();
+  if(id==='boost')renderBoost();
+  if(id==='books')renderBooks();
+  if(id==='rules')renderRules();
+  if(id==='cards')fcLoad();
 }
 
 // ── IDOL ──
-let warnMode = false;
 function renderIdol(warn=false){
-  warnMode = warn;
-  const idol = IDOLS[state.idolIdx % IDOLS.length];
-  let kr, tw;
-  if(warn){
-    const w = WARN_KR[Math.floor(Math.random()*WARN_KR.length)];
-    kr=w.kr; tw=w.tw;
-  } else {
-    const qi = Math.floor(Math.random()*idol.kr.length);
-    kr=idol.kr[qi]; tw=idol.tw[qi];
-  }
-  document.getElementById('idol-tag').textContent = idol.tag;
-  document.getElementById('idol-kr').innerHTML = kr.replace(/\n/g,'<br>');
-  document.getElementById('idol-tw').textContent = tw;
-  document.getElementById('idol-name').textContent = idol.name;
-  document.getElementById('idol-deco').textContent = idol.kr[0].slice(0,2);
+  warnMode=warn;
+  const idol=IDOLS[state.idolIdx%IDOLS.length];
+  let kr,tw;
+  if(warn){const w=WARN_KR[Math.floor(Math.random()*WARN_KR.length)];kr=w.kr;tw=w.tw;}
+  else{const qi=Math.floor(Math.random()*idol.kr.length);kr=idol.kr[qi];tw=idol.tw[qi];}
+  document.getElementById('idol-tag').textContent=idol.tag;
+  document.getElementById('idol-kr').innerHTML=kr.replace(/\n/g,'<br>');
+  document.getElementById('idol-tw').textContent=tw;
+  document.getElementById('idol-name').textContent=idol.name;
+  document.getElementById('idol-deco').textContent=kr.slice(0,2);
 }
-function nextIdol(){ state.idolIdx++; renderIdol(warnMode); saveState(); }
+function nextIdol(){state.idolIdx++;renderIdol(warnMode);saveState();}
+
+// ── STREAK ──
+function renderStreak(){
+  const today=new Date();
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const key=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+    const log=state.logs.find(l=>l.key===key);
+    const isToday=i===0;
+    days.push({key,log,isToday,label:['日','一','二','三','四','五','六'][d.getDay()]});
+  }
+  document.getElementById('streak-bar').innerHTML=days.map(d=>`
+    <div class="streak-day ${d.log?'done':''} ${d.isToday?'today':''}">
+      ${d.log?'<span class="s-emoji">✓</span>':''}
+      <span>${d.label}</span>
+    </div>`).join('');
+  const streak=calcStreak();
+  document.getElementById('streak-num').textContent=streak;
+  document.getElementById('total-days-num').textContent=state.logs.length;
+}
+
+function calcStreak(){
+  let streak=0;const today=new Date();
+  for(let i=0;i<365;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const key=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+    if(state.logs.find(l=>l.key===key))streak++;else break;
+  }
+  return streak;
+}
 
 // ── TODAY ──
 function generateToday(){
-  const mins = parseInt(document.getElementById('avail').value)||60;
-  const isWE = [0,6].includes(new Date().getDay());
-  const minReq = isWE ? state.rules.minWeekend : state.rules.minWeekday;
-  const warnArea = document.getElementById('warn-area');
-
-  if(mins < minReq){
-    const diff = minReq-mins;
-    warnArea.innerHTML=`<div class="warn-box">⚠️ 今天只有 ${mins} 分鐘，比你設定的最低 <strong>${minReq} 分鐘</strong> 少了 <strong>${diff} 分鐘</strong>！<br>把通勤時間也算進去試試看，通常能多擠出15-20分鐘。</div>`;
-    warnArea.classList.add('shake');
-    setTimeout(()=>warnArea.classList.remove('shake'),400);
+  const mins=parseInt(document.getElementById('avail').value)||60;
+  const isWE=[0,6].includes(new Date().getDay());
+  const minReq=isWE?state.rules.minWeekend:state.rules.minWeekday;
+  const warnArea=document.getElementById('warn-area');
+  if(mins<minReq){
+    warnArea.innerHTML=`<div class="warn-box">⚠️ 今天只有 ${mins} 分鐘，低於你設定的最低 <strong>${minReq} 分鐘</strong>，還差 <strong>${minReq-mins} 分鐘</strong>！<br>把通勤時間也算進去試試看，通常能多擠出15-20分鐘。</div>`;
+    warnArea.classList.add('shake');setTimeout(()=>warnArea.classList.remove('shake'),400);
     renderIdol(true);
-  } else if(mins < minReq+10){
-    warnArea.innerHTML=`<div class="warn-box" style="border-color:var(--amber);background:var(--amber-dim);color:var(--amber)">🟡 勉強達標！再多讀一個任務會更好。</div>`;
+  }else if(mins<minReq+10){
+    warnArea.innerHTML=`<div class="amber-box">🟡 勉強達標！再多讀一個任務會更好。</div>`;
     renderIdol(false);
-  } else { warnArea.innerHTML=''; renderIdol(false); }
+  }else{warnArea.innerHTML='';renderIdol(false);}
 
-  state.tasks=[]; state.doneSet=new Set();
-  let budget=mins;
+  state.tasks=[];state.doneSet=new Set();
   const minsMap={grammar:20,vocab:15,exam:25,listen:20,write:20};
-  const active = state.books.filter(b=>b.active && currentMonth>=(b.startMonth||0)+1);
+  const active=state.books.filter(b=>b.active&&currentMonth>=(b.startMonth||0)+1);
+  let budget=mins;
   active.forEach(b=>{
-    const need=minsMap[b.type]||20;
-    if(budget<need) return;
-    const curr=b.current||0, total=b.total||0;
-    const detail = total>0
-      ? `第 ${curr+1}～${curr+b.daily} ${b.unit}（總 ${total}，完成 ${Math.round(curr/total*100)}%）`
-      : `（請到「書本管理」填入總${b.unit}數）`;
+    const need=minsMap[b.type]||20;if(budget<need)return;
+    const curr=b.current||0,total=b.total||0;
+    const detail=total>0?`第${curr+1}～${curr+b.daily}${b.unit}（總${total}，完成${Math.round(curr/total*100)}%）`:`（請到「書本管理」填入總${b.unit}數）`;
     state.tasks.push({lang:b.lang,name:b.name,detail,method:METHODS[b.type]||'',mins:need,bookId:b.id,daily:b.daily});
     budget-=need;
   });
-  if(budget>=10) state.tasks.push({lang:'en',name:'英文單字睡前複習',detail:'今天背的字蓋住中文再測一遍',method:'把今天的字全部用Anki測驗，不熟的標起來。這步決定你明天記得多少！',mins:10,bookId:'rev_en'});
-  if(budget>=10) state.tasks.push({lang:'kr',name:'韓文文型睡前複習',detail:'今天學的文型例句再唸一遍',method:'把今天韓文文型例句大聲唸出來，再自己造一個新句子。2分鐘就夠！',mins:10,bookId:'rev_kr'});
+  if(budget>=10)state.tasks.push({lang:'en',name:'英文單字睡前複習',detail:'今天背的字蓋住中文再測一遍',method:'把今天的字全部複習，不熟的標記，明天優先複習。這步決定你明天記得多少！',mins:10,bookId:'rev_en'});
+  if(budget>=10)state.tasks.push({lang:'kr',name:'韓文文型睡前複習',detail:'今天學的文型例句再唸一遍',method:'把今天韓文文型例句大聲唸出來，再自己造一個新句子。2分鐘就夠！',mins:10,bookId:'rev_kr'});
   renderTasks();
   const tip=document.getElementById('extra-tip');
-  if(mins>=90){
-    const extra=mins-60;
-    tip.innerHTML=`<div class="ok-box">⚡ 今天比平均多讀 <strong>${extra} 分鐘</strong>，可以提前約 <strong>${Math.max(1,Math.round(extra/2))} 天</strong> 完成目標！</div>`;
-  } else tip.innerHTML='';
+  if(mins>=90){const extra=mins-60;tip.innerHTML=`<div class="ok-box">⚡ 今天比平均多讀 <strong>${extra} 分鐘</strong>，可以提前約 <strong>${Math.max(1,Math.round(extra/2))} 天</strong> 完成目標！連續加油就能早點考試！</div>`;}
+  else tip.innerHTML='';
 }
 
 function renderTasks(){
   const list=document.getElementById('task-list');
-  if(!state.tasks.length){list.innerHTML='<div style="color:var(--text3);font-size:14px;padding:1rem;text-align:center">輸入分鐘數，按「計畫生成」</div>';updateStats();return;}
+  if(!state.tasks.length){list.innerHTML='<div style="color:var(--text3);font-size:14px;padding:1rem;text-align:center">輸入分鐘數，按「產生計畫」</div>';updateStats();return;}
   list.innerHTML=state.tasks.map((t,i)=>`
     <div class="task-row">
       <div class="chk ${state.doneSet.has(i)?'done':''}" onclick="toggleTask(${i})" role="checkbox" aria-checked="${state.doneSet.has(i)}">${state.doneSet.has(i)?'✓':''}</div>
       <div class="task-body">
         <div class="task-name ${state.doneSet.has(i)?'done':''}">${t.name}</div>
         <div class="task-detail">${t.detail}</div>
-        ${t.method?`<div class="task-method" id="m${i}">${t.method.replace(/\n/g,'<br>')}</div>
-          <button class="method-btn" onclick="toggleMethod(${i})" id="mb${i}">▸ 查看詳細讀法</button>`:''}
+        ${t.method?`<div class="task-method" id="m${i}">${t.method.replace(/\n/g,'<br>')}</div><button class="method-btn" onclick="toggleMethod(${i})" id="mb${i}">▸ 查看詳細讀法</button>`:''}
       </div>
       <div class="task-meta">
-        <span class="badge ${t.lang==='en'?'b-en':t.lang==='kr'?'b-kr':'b-topik'}">${t.lang==='en'?'영어 EN':t.lang==='kr'?'한국어 KR':'TOPIK'}</span>
-        <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${t.mins}분</span>
+        <span class="badge ${t.lang==='en'?'b-en':t.lang==='kr'?'b-kr':'b-topik'}">${t.lang==='en'?'EN':'KR'}</span>
+        <span style="font-size:11px;color:var(--text3);font-family:'DM Mono'">${t.mins}분</span>
       </div>
     </div>`).join('');
   updateStats();
 }
 
 function toggleMethod(i){
-  const m=document.getElementById('m'+i), b=document.getElementById('mb'+i);
+  const m=document.getElementById('m'+i),b=document.getElementById('mb'+i);
   const open=m.classList.toggle('open');
   b.textContent=open?'▾ 收起讀法':'▸ 查看詳細讀法';
 }
 
 function toggleTask(i){
-  if(state.doneSet.has(i)) state.doneSet.delete(i);
-  else {
+  if(state.doneSet.has(i))state.doneSet.delete(i);
+  else{
     state.doneSet.add(i);
     const t=state.tasks[i];
-    if(t.bookId && !['rev_en','rev_kr'].includes(t.bookId)){
+    if(t.bookId&&!['rev_en','rev_kr'].includes(t.bookId)){
       const b=state.books.find(b=>b.id===t.bookId);
-      if(b) b.current=Math.min(b.total||999999,(b.current||0)+b.daily);
+      if(b)b.current=Math.min(b.total||999999,(b.current||0)+b.daily);
     }
-    if(state.doneSet.size===state.tasks.length) celebrate();
+    if(state.doneSet.size===state.tasks.length)celebrate();
     saveState();
   }
   renderTasks();
 }
 
 function celebrate(){
-  logToday();
+  logToday();renderStreak();
   const idol=IDOLS[state.idolIdx%IDOLS.length];
-  const kr=idol.kr[Math.floor(Math.random()*idol.kr.length)];
-  setTimeout(()=>alert(`🎉 전부 완료!\n\n${idol.name}\n「${kr}」\n\n모두 완료했어!`),100);
+  const ki=Math.floor(Math.random()*idol.kr.length);
+  const el=document.getElementById('idol-box');
+  el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),300);
+  setTimeout(()=>alert(`🎉 전부 완료!\n\n${idol.name}\n「${idol.kr[ki].replace(/\n/,' ')}」\n\n오늘도 수고했어!`),100);
 }
 
 function logToday(){
@@ -881,15 +858,15 @@ function logToday(){
   const mins=parseInt(document.getElementById('avail').value)||60;
   const done=state.doneSet.size;
   const pct=state.tasks.length?Math.round(done/state.tasks.length*100):0;
-  const existing=state.logs.findIndex(l=>l.key===key);
-  if(existing>=0) state.logs[existing]={key,mins,done,pct,date:now.toLocaleDateString('zh-TW')};
-  else state.logs.unshift({key,mins,done,pct,date:now.toLocaleDateString('zh-TW')});
-  if(state.logs.length>365) state.logs.pop();
+  const ei=state.logs.findIndex(l=>l.key===key);
+  const entry={key,mins,done,pct,date:now.toLocaleDateString('zh-TW')};
+  if(ei>=0)state.logs[ei]=entry;else state.logs.unshift(entry);
+  if(state.logs.length>365)state.logs.pop();
   saveState();
 }
 
 function updateStats(){
-  const total=state.tasks.length, done=state.doneSet.size;
+  const total=state.tasks.length,done=state.doneSet.size;
   document.getElementById('s-done').textContent=done;
   document.getElementById('s-total').textContent=total;
   const pct=total?Math.round(done/total*100):0;
@@ -897,27 +874,160 @@ function updateStats(){
   document.getElementById('prog').style.width=pct+'%';
 }
 
-function adjustToday(){
-  const m=prompt('오늘 일이 생겼어! 몇 분 공부할 수 있어?\n（今天有事！剩幾分鐘可以讀書？）');
-  if(m&&!isNaN(m)&&parseInt(m)>0){document.getElementById('avail').value=Math.max(10,parseInt(m));generateToday();}
+function quickEvent(reason){
+  const mins={練舞:30,聚餐:20,加班:30,很累:20,生病:15}[reason]||25;
+  const cur=parseInt(document.getElementById('avail').value)||60;
+  const newMins=Math.max(10,cur-mins);
+  document.getElementById('avail').value=newMins;
+  generateToday();
 }
+
+// ── TIMER ──
+let timerInterval=null,timerSeconds=0,timerTarget=25*60,timerRunning=false,timerSessionStart=null;
+
+function setTimer(mins){
+  timerReset();timerTarget=mins*60;
+  document.getElementById('timer-display').textContent=formatTime(timerTarget);
+  document.getElementById('timer-label').textContent=`設定 ${mins} 分鐘`;
+}
+function timerStart(){
+  if(timerRunning)return;
+  timerRunning=true;timerSessionStart=new Date();
+  document.getElementById('timer-start-btn').style.display='none';
+  document.getElementById('timer-pause-btn').style.display='inline-flex';
+  document.getElementById('timer-label').textContent='讀書中...加油！';
+  timerInterval=setInterval(()=>{
+    timerSeconds++;
+    const left=timerTarget-timerSeconds;
+    document.getElementById('timer-display').textContent=formatTime(Math.max(0,left));
+    if(left<=0){timerDone();}
+  },1000);
+}
+function timerPause(){
+  clearInterval(timerInterval);timerRunning=false;
+  document.getElementById('timer-start-btn').style.display='inline-flex';
+  document.getElementById('timer-pause-btn').style.display='none';
+  document.getElementById('timer-label').textContent='暫停中';
+}
+function timerReset(){
+  clearInterval(timerInterval);timerRunning=false;timerSeconds=0;
+  document.getElementById('timer-display').textContent=formatTime(timerTarget);
+  document.getElementById('timer-label').textContent='準備開始';
+  document.getElementById('timer-start-btn').style.display='inline-flex';
+  document.getElementById('timer-pause-btn').style.display='none';
+}
+function timerDone(){
+  clearInterval(timerInterval);timerRunning=false;
+  document.getElementById('timer-label').textContent='完成！';
+  const mins=Math.round(timerSeconds/60);
+  state.timerLogs.unshift({date:new Date().toLocaleString('zh-TW'),mins});
+  if(state.timerLogs.length>50)state.timerLogs.pop();
+  saveState();renderTimerLog();
+  setTimeout(()=>alert(`⏰ 時間到！\n完成了 ${mins} 分鐘的讀書！\n${IDOLS[state.idolIdx%IDOLS.length].name}：「${IDOLS[state.idolIdx%IDOLS.length].tw[0]}」`),100);
+}
+function formatTime(s){const m=Math.floor(s/60),ss=s%60;return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;}
+function renderTimerLog(){
+  const el=document.getElementById('timer-log');
+  if(!state.timerLogs.length){el.innerHTML='<div style="color:var(--text3);font-size:13px">還沒有記錄</div>';return;}
+  el.innerHTML=state.timerLogs.slice(0,10).map(l=>`
+    <div class="boost-row"><span style="font-size:12px;color:var(--text2)">${l.date}</span><span style="font-size:13px;font-weight:600;color:var(--teal)">${l.mins} 分鐘</span></div>`).join('');
+}
+
+// ── FLASHCARDS ──
+let fcQueue=[],fcIdx=0,fcFlipped=false;
+
+function fcLoad(){
+  const lang=document.getElementById('fc-lang-filter').value;
+  const mode=document.getElementById('fc-mode').value;
+  let cards=state.flashcards.filter(c=>lang==='all'||c.lang===lang);
+  if(mode==='weak')cards=cards.filter(c=>!c.known);
+  fcQueue=cards;fcIdx=0;fcFlipped=false;
+  renderFcList();
+  document.getElementById('fc-count').textContent=`（${state.flashcards.length} 個字）`;
+}
+
+function fcStart(){
+  fcLoad();
+  if(!fcQueue.length){alert('還沒有單字！先新增一些單字吧。');return;}
+  fcIdx=0;fcFlipped=false;
+  fcRender();
+  document.getElementById('fc-result').style.display='flex';
+  document.getElementById('fc-nav').style.display='flex';
+}
+
+function fcRender(){
+  if(!fcQueue.length)return;
+  const c=fcQueue[fcIdx];
+  document.getElementById('fc-prog').textContent=`${fcIdx+1} / ${fcQueue.length}`;
+  document.getElementById('fc-front').textContent=c.word;
+  document.getElementById('fc-sub').textContent=c.pos||c.lang==='en'?'英文':'韓文';
+  document.getElementById('fc-meaning').textContent=c.meaning;
+  document.getElementById('fc-example').textContent=c.example||'';
+  document.getElementById('fc-back').classList.remove('show');
+  fcFlipped=false;
+}
+
+function fcFlip(){
+  fcFlipped=!fcFlipped;
+  const back=document.getElementById('fc-back');
+  if(fcFlipped)back.classList.add('show');else back.classList.remove('show');
+}
+
+function fcResult(known){
+  if(fcQueue[fcIdx]){fcQueue[fcIdx].known=known===true;const orig=state.flashcards.find(c=>c.id===fcQueue[fcIdx].id);if(orig)orig.known=known===true;}
+  saveState();
+  fcNext();
+}
+
+function fcNext(){
+  if(fcIdx<fcQueue.length-1){fcIdx++;fcRender();}
+  else{alert(`練習完成！共 ${fcQueue.length} 個字。`);renderFcList();}
+}
+function fcPrev(){if(fcIdx>0){fcIdx--;fcRender();}}
+
+function fcAddWord(){
+  const word=document.getElementById('fc-add-word').value.trim();
+  const meaning=document.getElementById('fc-add-meaning').value.trim();
+  if(!word||!meaning){alert('請填入單字和意思');return;}
+  const card={id:Date.now().toString(),lang:document.getElementById('fc-add-lang').value,word,meaning,pos:document.getElementById('fc-add-pos').value.trim(),example:document.getElementById('fc-add-ex').value.trim(),known:false};
+  state.flashcards.push(card);saveState();fcLoad();
+  document.getElementById('fc-add-word').value='';document.getElementById('fc-add-meaning').value='';
+  document.getElementById('fc-add-pos').value='';document.getElementById('fc-add-ex').value='';
+}
+
+function toggleFcAdd(){
+  const f=document.getElementById('fc-add-form');
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+
+function renderFcList(){
+  const el=document.getElementById('fc-list');
+  if(!state.flashcards.length){el.innerHTML='<div style="color:var(--text3);font-size:13px">還沒有單字，點上方「新增單字」加入</div>';return;}
+  el.innerHTML=state.flashcards.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="badge ${c.lang==='en'?'b-en':'b-kr'}">${c.lang==='en'?'EN':'KR'}</span>
+      <span style="font-size:14px;font-weight:500;flex:1">${c.word}</span>
+      <span style="font-size:13px;color:var(--text2);flex:1">${c.meaning}</span>
+      <span style="font-size:11px;color:${c.known?'var(--teal)':'var(--text3)'}">${c.known?'✓熟':'—'}</span>
+      <button onclick="fcDelete(${i})" class="btn btn-xs" style="color:var(--red);border-color:rgba(192,57,43,0.3)">刪</button>
+    </div>`).join('');
+}
+
+function fcDelete(i){state.flashcards.splice(i,1);saveState();fcLoad();}
 
 // ── WEEK ──
 function renderWeek(){
   const todayIdx=new Date().getDay()===0?6:new Date().getDay()-1;
   document.getElementById('week-cards').innerHTML=WEEK_PLAN.map((d,i)=>`
-    <div class="week-card ${i===state.selDay?'active':''} ${i===todayIdx&&i!==state.selDay?'is-today':''}" onclick="selWeekDay(${i})">
-      <div class="week-card-label" style="color:${i===todayIdx?'var(--teal)':'var(--text2)'}">${d.label}<div style="font-size:9px;color:var(--text3);font-family:'DM Mono'">${d.kr}</div></div>
-      <div class="week-card-dots">${d.tasks.map(t=>`<div class="wc-dot ${t.lang==='en'?'wc-en':'wc-kr'}" title="${t.name}"></div>`).join('')}</div>
+    <div class="week-card ${i===state.selDay?'active':''}" onclick="selWeekDay(${i})">
+      <div class="week-card-label ${i===todayIdx?'today':''}">${d.label}<div style="font-size:9px;color:var(--text3);font-family:'DM Mono'">${d.kr}</div></div>
+      <div class="week-card-dots">${d.tasks.map(t=>`<div class="wc-dot ${t.lang==='en'?'wc-en':'wc-kr'}"></div>`).join('')}</div>
     </div>`).join('');
   const d=WEEK_PLAN[state.selDay];
   const total=d.tasks.reduce((a,t)=>a+t.mins,0);
   document.getElementById('week-detail').innerHTML=`
     <div class="card">
-      <div class="card-title" style="justify-content:space-between">
-        <span>${d.label} · ${d.kr}</span>
-        <span class="badge ${d.type==='we'?'b-topik':'b-gray'}">${d.note} · ${total}分鐘</span>
-      </div>
+      <div class="card-title" style="justify-content:space-between"><span>${d.label} · ${d.kr}</span><span class="badge ${d.type==='we'?'b-topik':'b-gray'}">${d.note} · ${total}分鐘</span></div>
       ${d.tasks.map(t=>`
         <div class="task-row">
           <div class="task-body">
@@ -925,86 +1035,98 @@ function renderWeek(){
             <div class="task-detail">${t.detail}</div>
             <div class="task-method open">${METHODS[t.type]?.replace(/\n/g,'<br>')||''}</div>
           </div>
-          <div class="task-meta">
-            <span class="badge ${t.lang==='en'?'b-en':'b-kr'}">${t.lang==='en'?'EN':'KR'}</span>
-            <span style="font-size:11px;color:var(--text3)">${t.mins}분</span>
-          </div>
+          <div class="task-meta"><span class="badge ${t.lang==='en'?'b-en':'b-kr'}">${t.lang==='en'?'EN':'KR'}</span><span style="font-size:11px;color:var(--text3)">${t.mins}분</span></div>
         </div>`).join('')}
     </div>`;
 }
 function selWeekDay(i){state.selDay=i;renderWeek();}
 
-// ── MONTH CALENDAR ──
+// ── MONTH ──
 function renderMonth(){
-  const y=state.calYear, m=state.calMonth;
+  const y=state.calYear,m=state.calMonth;
   document.getElementById('month-label').textContent=`${y}年 ${m+1}月`;
   const firstDay=new Date(y,m,1).getDay();
   const startOffset=firstDay===0?6:firstDay-1;
   const daysInMonth=new Date(y,m+1,0).getDate();
   const today=new Date();
   let html='';
-  for(let i=0;i<startOffset;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let i=0;i<startOffset;i++)html+=`<div class="cal-day empty"></div>`;
   for(let d=1;d<=daysInMonth;d++){
     const key=`${y}-${m+1}-${d}`;
     const log=state.logs.find(l=>l.key===key);
     const isToday=y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate();
     html+=`<div class="cal-day ${isToday?'today':''} ${log?'has-log':''}" onclick="showDayDetail('${key}',${d})">
-      <span>${d}</span>
-      ${log?`<div class="cal-dot"></div><div class="cal-pct">${log.pct}%</div>`:''}
+      <span>${d}</span>${log?`<div class="cal-dot"></div><div class="cal-pct">${log.pct}%</div>`:''}
     </div>`;
   }
   document.getElementById('cal-grid').innerHTML=html;
-
-  // monthly stats
-  const monthLogs=state.logs.filter(l=>{ const p=l.key.split('-'); return parseInt(p[0])===y&&parseInt(p[1])===m+1; });
-  const totalDays=monthLogs.length;
-  const avgPct=totalDays?Math.round(monthLogs.reduce((a,l)=>a+l.pct,0)/totalDays):0;
-  const avgMins=totalDays?Math.round(monthLogs.reduce((a,l)=>a+l.mins,0)/totalDays):0;
-  document.getElementById('month-stat-content').innerHTML=`
+  const mLogs=state.logs.filter(l=>{const p=l.key.split('-');return parseInt(p[0])===y&&parseInt(p[1])===m+1;});
+  const tDays=mLogs.length,avgPct=tDays?Math.round(mLogs.reduce((a,l)=>a+l.pct,0)/tDays):0,avgMins=tDays?Math.round(mLogs.reduce((a,l)=>a+l.mins,0)/tDays):0;
+  document.getElementById('month-stats').innerHTML=`
+    <div class="card-title">本月統計</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-      <div class="stat-card"><div class="stat-num">${totalDays}</div><div class="stat-label">學習天數</div></div>
+      <div class="stat-card"><div class="stat-num">${tDays}</div><div class="stat-label">學習天數</div></div>
       <div class="stat-card"><div class="stat-num">${avgPct}%</div><div class="stat-label">平均完成率</div></div>
       <div class="stat-card"><div class="stat-num">${avgMins}</div><div class="stat-label">平均分鐘</div></div>
     </div>`;
-
-  // weekly plan cards
-  document.getElementById('week-plan-cards').innerHTML=WEEK_PLAN.map(d=>`
-    <div style="margin-bottom:14px">
-      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">${d.label} · ${d.kr} <span class="badge ${d.type==='we'?'b-topik':'b-gray'}" style="margin-left:4px">${d.note}</span></div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px">
-        ${d.tasks.map(t=>`<span class="badge ${t.lang==='en'?'b-en':'b-kr'}" style="font-size:11px">${t.name}</span>`).join('')}
-      </div>
-    </div>`).join('');
 }
-
-function changeMonth(dir){
-  state.calMonth+=dir;
-  if(state.calMonth>11){state.calMonth=0;state.calYear++;}
-  if(state.calMonth<0){state.calMonth=11;state.calYear--;}
-  renderMonth();
-}
-
-function showDayDetail(key,d){
-  const log=state.logs.find(l=>l.key===key);
-  if(log) alert(`${log.date}\n讀書時間：${log.mins} 分鐘\n完成任務：${log.done} 個\n完成率：${log.pct}%`);
-  else alert(`${key}\n這天沒有學習記錄`);
-}
+function changeMonth(dir){state.calMonth+=dir;if(state.calMonth>11){state.calMonth=0;state.calYear++;}if(state.calMonth<0){state.calMonth=11;state.calYear--;}renderMonth();}
+function showDayDetail(key,d){const log=state.logs.find(l=>l.key===key);if(log)alert(`${log.date}\n讀書時間：${log.mins}分\n完成：${log.done}個任務\n完成率：${log.pct}%`);else alert(`${key}\n這天沒有學習記錄`);}
 
 // ── REVIEW ──
 function renderReview(){
-  document.getElementById('spaced-table').innerHTML=SPACED.map(s=>`
-    <div class="boost-row"><span style="font-size:13px;color:var(--text2)">${s.t}</span><span style="font-size:13px;color:var(--text)">${s.a}</span></div>`).join('');
-  document.getElementById('method-list').innerHTML=Object.entries({
-    '文法書（AZAR、KOREA grammar）':METHODS.grammar,
-    '單字書（多益單字、韓文心智圖）':METHODS.vocab,
-    '考試題庫（多益閱讀）':METHODS.exam,
-    '聽力題庫（多益聽力）':METHODS.listen,
-    '寫作練習（TOPIK寫作）':METHODS.write,
-  }).map(([k,v])=>`
-    <div class="task-row"><div class="task-body">
-      <div class="task-name">${k}</div>
-      <div class="task-method open">${v.replace(/\n/g,'<br>')}</div>
-    </div></div>`).join('');
+  document.getElementById('method-list').innerHTML=Object.entries({'文法書（AZAR、KOREA grammar）':METHODS.grammar,'單字書（多益單字、韓文心智圖）':METHODS.vocab,'考試題庫（多益閱讀）':METHODS.exam,'聽力題庫（多益聽力）':METHODS.listen,'寫作練習（TOPIK寫作）':METHODS.write}).map(([k,v])=>`
+    <div class="task-row"><div class="task-body"><div class="task-name">${k}</div><div class="task-method open">${v.replace(/\n/g,'<br>')}</div></div></div>`).join('');
+}
+
+// ── REPORT ──
+function renderReport(){
+  const today=new Date();
+  const weekLogs=[];
+  for(let i=6;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);const key=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;const log=state.logs.find(l=>l.key===key);weekLogs.push({key,log,day:['日','一','二','三','四','五','六'][d.getDay()]});}
+  const doneDays=weekLogs.filter(d=>d.log).length;
+  const totalMins=weekLogs.reduce((a,d)=>a+(d.log?.mins||0),0);
+  const avgPct=doneDays?Math.round(weekLogs.filter(d=>d.log).reduce((a,d)=>a+d.log.pct,0)/doneDays):0;
+  const missedDays=7-doneDays;
+  const idol=IDOLS[state.idolIdx%IDOLS.length];
+  const ki=Math.floor(Math.random()*idol.kr.length);
+
+  let catchUpMsg='';
+  if(missedDays>0)catchUpMsg=`<div class="amber-box">📋 補課建議：這週有 <strong>${missedDays} 天</strong> 沒讀書。建議下週假日各多讀 <strong>${Math.round(missedDays*30/2)} 分鐘</strong> 來補回來。</div>`;
+
+  document.getElementById('report-content').innerHTML=`
+    <div class="report-card">
+      <div style="font-size:11px;color:var(--teal);font-family:'DM Mono';margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">週報 · WEEKLY REPORT</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+        <div class="stat-card"><div class="stat-num">${doneDays}/7</div><div class="stat-label">學習天數</div></div>
+        <div class="stat-card"><div class="stat-num">${totalMins}</div><div class="stat-label">總分鐘數</div></div>
+        <div class="stat-card"><div class="stat-num">${avgPct}%</div><div class="stat-label">平均完成率</div></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        ${weekLogs.map(d=>`<div style="flex:1;text-align:center">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:4px">${d.day}</div>
+          <div style="height:40px;background:${d.log?'var(--teal)':'var(--bg3)'};border-radius:4px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px">
+            ${d.log?`<span style="font-size:9px;color:white;font-family:'DM Mono'">${d.log.pct}%</span>`:''}
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+    ${catchUpMsg}
+    <div class="idol-card">
+      <div class="idol-tag">${idol.tag}</div>
+      <div class="idol-kr">${idol.kr[ki].replace(/\n/g,'<br>')}</div>
+      <div class="idol-tw">${idol.tw[ki]}</div>
+      <div class="idol-name">${idol.name}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">下週建議</div>
+      ${doneDays>=5?`<div class="ok-box">✦ 這週表現很好！繼續保持，下週試著每天多讀5分鐘。</div>`:doneDays>=3?`<div class="amber-box">✦ 下週目標：達到5天以上，重點加強英文單字的每日複習。</div>`:`<div class="warn-box">✦ 下週重新出發！先從每天只讀20分鐘開始，建立習慣比讀多少更重要。</div>`}
+      <div style="font-size:13px;color:var(--text2);line-height:1.7">
+        ✦ 通勤時間一定要利用（每天+20分鐘）<br>
+        ✦ 睡前10分鐘複習不能跳過<br>
+        ✦ 臨時有事就用「快速事件」鍵縮短計畫，不要直接跳過
+      </div>
+    </div>`;
 }
 
 // ── BOOST ──
@@ -1018,29 +1140,22 @@ function calcBoost(){
   const idol=IDOLS[state.idolIdx%IDOLS.length];
   const ki=Math.floor(Math.random()*idol.kr.length);
   document.getElementById('boost-result').innerHTML=`
-    <div class="boost-row"><span class="boost-label" style="font-size:13px;color:var(--text2)">比平時多讀了</span><span class="boost-val">+${diff} 분</span></div>
-    <div class="boost-row"><span class="boost-label" style="font-size:13px;color:var(--text2)">可以提前完成目標</span><span class="boost-val">約 ${daysAhead} 天</span></div>
-    <div class="boost-row"><span class="boost-label" style="font-size:13px;color:var(--text2)">多記了英文單字</span><span class="boost-val">約 ${enWords} 個</span></div>
+    <div class="boost-row"><span style="font-size:13px;color:var(--text2)">比平時多讀了</span><span class="boost-val">+${diff} 分</span></div>
+    <div class="boost-row"><span style="font-size:13px;color:var(--text2)">可以提前完成目標</span><span class="boost-val">約 ${daysAhead} 天</span></div>
+    <div class="boost-row"><span style="font-size:13px;color:var(--text2)">多記了英文單字</span><span class="boost-val">約 ${enWords} 個</span></div>
     <div class="idol-card" style="margin-top:12px;margin-bottom:0">
       <div class="idol-tag">${idol.tag}</div>
       <div class="idol-kr">${idol.kr[ki].replace(/\n/g,'<br>')}</div>
       <div class="idol-tw">${idol.tw[ki]}</div>
     </div>`;
 }
-
 function renderBoost(){
   calcBoost();
   document.getElementById('month-timeline').innerHTML=MONTHS_PLAN.map(m=>`
     <div class="month-row">
-      <div class="month-header">
-        <span class="month-label-t">${m.m} <span style="font-size:10px;color:var(--teal);font-family:'DM Mono',monospace;margin-left:6px">${m.focus}</span></span>
-        <span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:11px">${m.pct}%</span>
-      </div>
+      <div class="month-header"><span style="font-weight:600">${m.m} <span style="font-size:10px;color:var(--teal);margin-left:6px">${m.focus}</span></span><span style="color:var(--text3);font-family:'DM Mono';font-size:11px">${m.pct}%</span></div>
       <div class="prog-wrap"><div class="prog-fill" style="width:${m.pct}%"></div></div>
-      <div class="month-tags">
-        <span class="badge b-en">${m.en}</span>
-        <span class="badge b-kr">${m.kr}</span>
-      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><span class="badge b-en">${m.en}</span><span class="badge b-kr">${m.kr}</span></div>
     </div>`).join('');
 }
 
@@ -1049,45 +1164,34 @@ function renderBooks(){
   document.getElementById('book-list-form').innerHTML=state.books.map((b,i)=>`
     <div class="card">
       <div class="card-title" style="justify-content:space-between">
-        <span style="display:flex;align-items:center;gap:8px">
-          <span class="badge ${b.lang==='en'?'b-en':b.lang==='kr'?'b-kr':'b-topik'}">${b.lang==='en'?'EN':'b-kr'?'KR':'TOPIK'}</span>${b.name}
-          ${b.startMonth>0?`<span class="badge b-gray" style="font-size:9px">${b.startMonth+1}個月後</span>`:''}
-        </span>
+        <span style="display:flex;align-items:center;gap:8px"><span class="badge ${b.lang==='en'?'b-en':b.lang==='kr'?'b-kr':'b-topik'}">${b.lang==='en'?'EN':b.lang==='kr'?'KR':'TOPIK'}</span>${b.name}${b.startMonth>0?`<span class="badge b-gray" style="font-size:9px">${b.startMonth+1}個月後開始</span>`:''}</span>
         <button onclick="removeBook(${i})" class="btn btn-xs" style="color:var(--red)">刪除</button>
       </div>
-      <div class="field-row3">
-        <span class="field-lbl">總${b.unit}數</span>
+      <div style="display:grid;grid-template-columns:1fr 110px 60px;gap:10px;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;color:var(--text2)">總${b.unit}數</span>
         <input type="number" value="${b.total||''}" placeholder="翻到最後一頁" onchange="updateBook(${i},'total',this.value)" style="width:100%">
         <span style="font-size:12px;color:var(--text3)">${b.unit}</span>
       </div>
-      <div class="field-row3">
-        <span class="field-lbl">目前讀到第</span>
+      <div style="display:grid;grid-template-columns:1fr 110px 60px;gap:10px;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;color:var(--text2)">目前讀到第</span>
         <input type="number" value="${b.current||0}" onchange="updateBook(${i},'current',this.value)" style="width:100%">
         <span style="font-size:12px;color:var(--text3)">${b.unit}</span>
       </div>
-      <div class="field-row3">
-        <span class="field-lbl">每天讀</span>
+      <div style="display:grid;grid-template-columns:1fr 110px 60px;gap:10px;align-items:center">
+        <span style="font-size:12px;color:var(--text2)">每天讀</span>
         <input type="number" value="${b.daily||5}" min="1" onchange="updateBook(${i},'daily',this.value)" style="width:100%">
         <span style="font-size:12px;color:var(--text3)">${b.unit}/天</span>
       </div>
-      ${b.total>0?`<div style="margin-top:6px;font-size:12px;color:var(--text3)">完成 ${Math.round((b.current||0)/b.total*100)}% · 還需 <strong style="color:var(--teal)">${Math.ceil((b.total-(b.current||0))/b.daily)}</strong> 天</div>`:''}
+      ${b.total>0?`<div style="margin-top:8px;font-size:12px;color:var(--text3)">完成 ${Math.round((b.current||0)/b.total*100)}% · 還需 <strong style="color:var(--teal)">${Math.ceil((b.total-(b.current||0))/b.daily)}</strong> 天</div>`:''}
     </div>`).join('');
 }
-
 function updateBook(i,k,v){state.books[i][k]=parseInt(v)||0;saveState();renderBooks();}
 function removeBook(i){if(confirm(`刪除「${state.books[i].name}」？`)){state.books.splice(i,1);saveState();renderBooks();}}
-function toggleAddBook(){
-  const f=document.getElementById('add-book-form');
-  const show=f.style.display==='none';
-  f.style.display=show?'block':'none';
-  document.getElementById('add-btn').textContent=show?'取消':'＋ 新增一本書';
-}
+function toggleAddBook(){const f=document.getElementById('add-book-form');const show=f.style.display==='none';f.style.display=show?'block':'none';document.getElementById('add-btn').textContent=show?'取消':'＋ 新增一本書';}
 function addBook(){
-  const name=document.getElementById('nb-name').value.trim();
-  if(!name){alert('請填入書名');return;}
-  state.books.push({id:'c'+Date.now(),name,lang:document.getElementById('nb-lang').value,unit:document.getElementById('nb-unit')||'頁',total:0,current:0,daily:parseInt(document.getElementById('nb-daily').value)||5,startMonth:parseInt(document.getElementById('nb-start').value)||0,type:document.getElementById('nb-type').value,active:true});
-  saveState();toggleAddBook();renderBooks();
-  document.getElementById('nb-name').value='';
+  const name=document.getElementById('nb-name').value.trim();if(!name){alert('請填入書名');return;}
+  state.books.push({id:'c'+Date.now(),name,lang:document.getElementById('nb-lang').value,unit:'頁',total:0,current:0,daily:parseInt(document.getElementById('nb-daily').value)||5,startMonth:parseInt(document.getElementById('nb-start').value)||0,type:document.getElementById('nb-type').value,active:true});
+  saveState();toggleAddBook();renderBooks();document.getElementById('nb-name').value='';
 }
 
 // ── RULES ──
@@ -1095,34 +1199,16 @@ function saveRules(){
   state.rules.minWeekday=parseInt(document.getElementById('min-weekday').value)||40;
   state.rules.minWeekend=parseInt(document.getElementById('min-weekend').value)||30;
   saveState();
-  const btn=document.querySelector('#page-rules .btn-teal');
-  btn.textContent='✓ 已儲存'; setTimeout(()=>btn.textContent='儲存規定',1500);
+  const btn=document.getElementById('save-rules-btn');btn.textContent='✓ 已儲存';setTimeout(()=>btn.textContent='儲存規定',1500);
 }
 function renderRules(){
   document.getElementById('min-weekday').value=state.rules.minWeekday;
   document.getElementById('min-weekend').value=state.rules.minWeekend;
-  const logList=document.getElementById('log-list');
-  if(!state.logs.length){logList.innerHTML='<div style="font-size:13px;color:var(--text3)">完成今日計畫後會自動記錄</div>';return;}
-  logList.innerHTML=state.logs.slice(0,20).map(l=>`
-    <div class="boost-row">
-      <span style="font-size:13px;color:var(--text2)">${l.date}</span>
-      <span style="font-size:13px;color:var(--text)">${l.mins}分鐘 · ${l.done}個任務 · ${l.pct}%</span>
-    </div>`).join('');
+  const el=document.getElementById('log-list');
+  if(!state.logs.length){el.innerHTML='<div style="font-size:13px;color:var(--text3)">完成今日計畫後會自動記錄</div>';return;}
+  el.innerHTML=state.logs.slice(0,20).map(l=>`
+    <div class="boost-row"><span style="font-size:12px;color:var(--text2)">${l.date}</span><span style="font-size:13px;color:var(--text)">${l.mins}分 · ${l.done}個任務 · ${l.pct}%</span></div>`).join('');
 }
-</script>
-
-<!-- Firebase Setup Guide -->
-<script>
-// 說明：第一次使用請照以下步驟設定Firebase
-// 1. 前往 https://console.firebase.google.com
-// 2. 點「建立專案」，輸入名稱（例如：my-study-plan）
-// 3. 關閉 Google Analytics，點「建立專案」
-// 4. 專案建立後，點「網頁」圖示（</>）
-// 5. 輸入應用程式暱稱，勾選「Firebase Hosting」，按「繼續」
-// 6. 複製 firebaseConfig 裡的內容，貼到上方 FIREBASE_CONFIG 區塊
-// 7. 在左側選「Authentication」→「開始使用」→「Google」→「啟用」→「儲存」
-// 8. 在左側選「Firestore Database」→「建立資料庫」→「以測試模式啟動」→選地區→「啟用」
-// 9. 存檔，重新用瀏覽器開啟這個HTML，按「用Google帳號登入」即可！
 </script>
 </body>
 </html>
