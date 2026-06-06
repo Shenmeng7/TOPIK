@@ -650,17 +650,61 @@ async function saveState(){
 }
 async function loadState(){
   let data=null;
-  if(db&&currentUser){try{const d=await db.collection('users').doc(currentUser.uid).get();if(d.exists)data=d.data();}catch(e){}}
-  else{try{const s=localStorage.getItem('study_v5');if(s)data=JSON.parse(s);}catch(e){}}
-  if(data){
-    if(data.books?.length)state.books=data.books;
-    if(data.rules)state.rules=data.rules;
-    if(data.logs)state.logs=data.logs;
-    if(data.idolIdx!=null)state.idolIdx=data.idolIdx;
-    if(data.exams)state.exams=data.exams;
-    if(data.timerLogs)state.timerLogs=data.timerLogs;
-    if(data.lastTestDate)state.lastTestDate=data.lastTestDate;
+  if(db&&currentUser){
+    try{
+      const d=await db.collection('users').doc(currentUser.uid).get();
+      if(d.exists) data=d.data();
+      // 如果v5沒有資料，嘗試讀v4的舊資料
+      if(!data||!data.books||!data.books.length){
+        const d4=await db.collection('users_v4').doc(currentUser.uid).get();
+        if(d4.exists) data=d4.data();
+      }
+      // 再試一次同一個collection但key不同
+      if(!data||!data.books||!data.books.length){
+        const d4b=await db.collection('users').doc(currentUser.uid+'_v4').get();
+        if(d4b.exists) data=d4b.data();
+      }
+    }catch(e){}
+  } else {
+    try{
+      // 先試v5
+      let s=localStorage.getItem('study_v5');
+      // 沒有就試v4
+      if(!s||JSON.parse(s)?.books?.every(b=>!b.total)) s=localStorage.getItem('study_v4');
+      // 再試v3
+      if(!s||JSON.parse(s)?.books?.every(b=>!b.total)) s=localStorage.getItem('study_v3');
+      if(s) data=JSON.parse(s);
+    }catch(e){}
   }
+  if(data){
+    if(data.books?.length) state.books=data.books.map(b=>({
+      ...b,
+      category: b.category||guessCategory(b),
+    }));
+    if(data.rules) state.rules=data.rules;
+    if(data.logs) state.logs=data.logs;
+    if(data.idolIdx!=null) state.idolIdx=data.idolIdx;
+    if(data.exams) state.exams=data.exams;
+    if(data.timerLogs) state.timerLogs=data.timerLogs;
+    if(data.lastTestDate) state.lastTestDate=data.lastTestDate;
+  }
+}
+
+function guessCategory(b){
+  const name=(b.name||'').toLowerCase();
+  if(name.includes('azar')||name.includes('多益文法')||name.includes('英文文法')) return 'en_grammar';
+  if(name.includes('多益單字')||name.includes('toeic')&&name.includes('vocab')) return 'toeic_vocab';
+  if(name.includes('多益閱讀')||name.includes('reading')) return 'toeic_reading';
+  if(name.includes('多益聽力')||name.includes('listening')) return 'toeic_listening';
+  if(name.includes('korea grammar')&&name.includes('低')) return 'topik_grammar';
+  if(name.includes('korea grammar')&&name.includes('中')) return 'topik_grammar';
+  if(name.includes('korea grammar')&&name.includes('高')) return 'topik_grammar';
+  if(name.includes('心智圖')||name.includes('韓文單字')) return 'topik_vocab';
+  if(name.includes('topik')||name.includes('寫作')) return 'topik_writing';
+  if(name.includes('精準應用')||name.includes('精準剖析')) return 'topik_grammar';
+  if(b.lang==='en') return 'en_grammar';
+  if(b.lang==='kr') return 'topik_grammar';
+  return 'topik_grammar';
 }
 
 // ══ DEFAULT DATA ══
