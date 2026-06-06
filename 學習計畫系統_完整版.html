@@ -427,16 +427,20 @@ input:focus,select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(45,1
   </div>
   <div id="ptab-boost" style="display:none">
     <div class="card">
-      <div class="card-title">加速計算器
-        <div class="tooltip-wrap"><button class="tip-btn">?</button><div class="tooltip-box">今天多讀幾分鐘，可以提前幾天完成目標。激勵自己多讀一點用的！</div></div>
+      <div class="card-title">📈 今日讀書建議
+        <div class="tooltip-wrap"><button class="tip-btn">?</button><div class="tooltip-box">系統根據你的考試日期和目前進度，主動建議你今天應該讀多少分鐘，以及這樣能提前幾天達標。不需要自己算！</div></div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-        <span style="font-size:13px;color:var(--text2)">平時每天</span>
-        <input type="number" id="base-mins" value="60" min="10" max="180" style="width:70px">
-        <span style="font-size:13px;color:var(--text2)">分，今天讀</span>
-        <input type="number" id="boost-mins" value="90" min="10" max="300" style="width:70px">
-        <span style="font-size:13px;color:var(--text2)">分</span>
-        <button class="btn btn-teal btn-sm" onclick="calcBoost()">計算 ↗</button>
+      <div id="smart-suggestion"></div>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">自訂計算</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+          <span style="font-size:13px;color:var(--text2)">平時每天</span>
+          <input type="number" id="base-mins" value="60" min="10" max="180" style="width:70px">
+          <span style="font-size:13px;color:var(--text2)">分，今天讀</span>
+          <input type="number" id="boost-mins" value="90" min="10" max="300" style="width:70px">
+          <span style="font-size:13px;color:var(--text2)">分</span>
+          <button class="btn btn-teal btn-sm" onclick="calcBoost()">計算 ↗</button>
+        </div>
       </div>
       <div id="boost-result"></div>
     </div>
@@ -689,11 +693,21 @@ const PHASE_RATIO={
 };
 
 const IDOLS=[
-  {name:'梁禎元 · ENHYPEN',tag:'ENHYPEN · 양정원',kr:['노력은 배신하지 않아.\n오늘도 최선을 다하자.','어제보다 나은 오늘이\n이미 성공이야.','힘들어도 포기하지 마.\n언젠가 빛날 거야.'],tw:['努力不會背叛你。今天也要盡力。','比昨天更好的今天，已經是成功了。','就算很累也不要放棄，總有一天會發光。']},
-  {name:'朴志晟 · NCT DREAM',tag:'NCT DREAM · 박지성',kr:['작은 노력도 쌓이면\n큰 변화가 돼.','오늘 30분도\n0분보다 100배 낫잖아.','꿈은 기다려주지 않아,\n행동으로 따라잡자.'],tw:['小小的努力累積起來就是大大的改變。','今天30分鐘也比0分鐘好100倍。','夢想不會等你，用行動追上它。']},
-  {name:'TXT',tag:'TOMORROW X TOGETHER',kr:['불완전한 노력이\n완벽한 게으름보다 의미있어.','복잡한 세상에서\n네 목표는 하나야.','오늘의 혼돈이\n최고의 너를 만들고 있어.'],tw:['不完美的努力比完美的懈怠更有意義。','複雜的世界裡，你的目標只有一個。','今天的混沌，正在塑造最好的你。']},
-  {name:'BOYNEXTDOOR',tag:'BND · 보이넥스트도어',kr:['매일 조금씩,\n쌓이면 대단해져.','오늘 노력한 네가\n내일의 더 나은 너야.','완벽하지 않아도 돼,\n매일 성장하면 충분해.'],tw:['每天一點點，累積起來就很厲害。','今天努力的你，就是明天更好的你。','不用完美，每天成長就夠了。']},
-  {name:'徐竟培',tag:'서경배 · CLOSE YOUR EYES',kr:['낮에는 일하고\n밤에는 공부하는 네가 대단해.','월급 뒤에는 노력이 있고,\n공부 뒤에는 미래가 있어.','눈을 감고, 다시 뜨고,\n계속 공부해.'],tw:['白天工作、晚上讀書的你，真的很了不起。','薪水背後是努力，讀書背後是未來。','閉上眼，再睜開，繼續讀書。']},
+  {name:'梁禎元 · ENHYPEN',tag:'ENHYPEN · 양정원',
+   kr:['노력은 배신하지 않아.\n오늘도 최선을 다하자.','어제보다 나은 오늘이\n이미 성공이야.','힘들어도 포기하지 마.\n언젠가 빛날 거야.','조금씩 해도 괜찮아.\n멈추지 않으면 돼.','오늘 힘든 게 내일의\n너를 만들고 있어.','완벽하지 않아도\n계속 가면 돼.','지금 이 순간도\n성장하고 있어.','포기하고 싶을 때가\n가장 중요한 순간이야.','작은 것도 쌓이면\n산이 돼.','오늘도 최선을 다한\n네가 자랑스러워.','힘들다고 멈추지 마.\n쉬어가도 되지만 멈추지 마.','네 노력은\n절대 사라지지 않아.','지금 당장은 몰라도\n언젠가 빛날 거야.','매일 조금씩\n더 나아지고 있어.','오늘 공부한 네가\n내일의 더 나은 너야.','불안해도 괜찮아.\n그래도 하는 게 용기야.','결과보다 과정이\n더 중요해.','쉬는 것도 공부의\n일부야.','너는 할 수 있어.\n나는 믿어.','오늘도 수고했어.\n정말 잘 하고 있어.','꿈을 향해 가는\n모든 순간이 의미있어.','남들과 비교하지 마.\n너만의 속도가 있어.','조금 느려도 괜찮아.\n포기하지 않으면 돼.','힘낼 때는 힘내고\n쉴 때는 제대로 쉬어.','오늘 하루도\n정말 잘 했어.','공부는 배신하지 않아.\n언젠가 꼭 결과가 와.','지금 이 노력이\n미래의 나를 만들어.','어렵다고 피하지 말고\n조금씩 도전해봐.','네가 노력하는 모습이\n벌써 대단해.','오늘 한 걸음이\n내일의 두 걸음이 돼.','실수해도 괜찮아.\n그게 배움이야.','완벽함보다 꾸준함이\n더 중요해.','지쳐도 포기하지 마.\n넌 할 수 있어.','힘든 하루도 지나면\n좋은 하루가 와.','오늘 공부한 것들이\n나중에 빛날 거야.','천천히 가도 괜찮아.\n함께 가면 되니까.','작은 성취도\n충분히 축하받을 자격 있어.','매일의 노력이\n기적을 만들어.','지금 이 순간\n최선을 다하면 돼.','어제보다 오늘이\n더 나아지고 있어.','힘든 길을 걷는 네가\n멋있어.','공부하는 네 모습이\n이미 승리야.','오늘 하루 고생했어.\n정말 잘 했어.','넌 분명히\n해낼 수 있어.','포기하지 마.\n아직 끝나지 않았어.','어떤 상황에서도\n희망을 놓지 마.','지금 힘들어도\n나중엔 웃을 수 있어.','너의 꿈을\n응원할게.','오늘도 화이팅!\n넌 정말 잘 하고 있어.'],
+   tw:['努力不會背叛你。今天也要盡力。','比昨天更好的今天，已經是成功了。','就算很累也不要放棄，總有一天會發光。','一點一點也沒關係，不要停下來就好。','今天的辛苦正在塑造明天的你。','不完美也沒關係，繼續走下去就好。','就在此刻，你也在成長。','最想放棄的時候，才是最關鍵的時刻。','小小的積累，最終會成為一座山。','今天盡力的你，我為你驕傲。','累了也不要停，休息一下再繼續。','你的努力永遠不會消失。','現在不知道，但總有一天會發光。','每天一點一點，都在進步。','今天讀書的你，就是明天更好的你。','就算不安也沒關係，繼續做就是勇氣。','過程比結果更重要。','休息也是學習的一部分。','你可以的，我相信你。','今天也辛苦了，你做得很好。','朝著夢想前進的每一刻都有意義。','不要和別人比，你有自己的節奏。','慢一點也沒關係，不放棄就好。','該努力時努力，該休息時好好休息。','今天一天，真的很棒。','讀書不會背叛你，總有一天結果會來。','現在的努力正在創造未來的自己。','不要因為困難而逃避，一步一步挑戰。','你努力的樣子，已經很了不起了。','今天的一步，會成為明天的兩步。','犯錯也沒關係，那就是學習。','比完美更重要的是持續。','累了也不要放棄，你可以的。','艱難的一天過後，美好的一天就來了。','今天學的東西，以後會發光。','慢慢走也沒關係，一起走就行。','小小的成就也值得好好慶祝。','每天的努力創造奇蹟。','此刻盡力就好。','比昨天更進一步了。','走在艱難路上的你，很帥。','讀書的你，已經是勝利者了。','今天一天辛苦了，真的很棒。','你一定能做到。','不要放棄，還沒結束。','任何情況下都不要失去希望。','現在再難，以後也能笑著說過來了。','為你的夢想加油。','今天也加油！你真的做得很好。']},
+  {name:'朴志晟 · NCT DREAM',tag:'NCT DREAM · 박지성',
+   kr:['작은 노력도 쌓이면\n큰 변화가 돼.','오늘 30분도\n0분보다 100배 낫잖아.','꿈은 기다려주지 않아,\n행동으로 따라잡자.','포기하지 마,\n지금 잘 하고 있어.','힘든 하루도\n지나고 나면 추억이 돼.','오늘 한 공부는\n절대 사라지지 않아.','천천히 해도 괜찮아,\n멈추지 않으면 돼.','오늘 힘들었어도\n내일은 달라질 수 있어.','작은 걸음이\n큰 길을 만들어.','지금 이 순간에\n최선을 다하면 돼.','공부는 결국\n너를 배신하지 않아.','힘들다고 느끼는 건\n그만큼 열심히 한 증거야.','오늘도 수고했어,\n넌 정말 대단해.','목표를 잊지 마,\n항상 그 자리에 있어.','오늘의 노력이\n내일의 실력이 돼.','완벽하지 않아도\n노력하는 게 중요해.','쉬고 싶을 때도\n조금만 더 버텨봐.','네 꿈은 가치 있어,\n포기하지 마.','힘든 순간도\n지나고 보면 성장이야.','오늘 잘 했어,\n진심으로 대단해.','뭐든지 처음은 어려워,\n익숙해지면 돼.','할 수 있다고 믿어,\n그게 시작이야.','지금 힘들다는 건\n그만큼 도전하고 있다는 거야.','매일 조금씩 성장하는\n네가 멋있어.','오늘 하루도\n최선을 다했잖아.','실수를 두려워하지 마,\n실수도 배움이야.','포기하기엔\n아직 이른 시간이야.','힘낼게,\n나도 함께야.','꿈을 향해 가는\n과정이 아름다워.','오늘의 노력은\n미래의 나에게 선물이야.','어렵다고 멈추지 마,\n할 수 있어.','네가 노력하는 모습\n정말 보기 좋아.','오늘 공부한 것들이\n언젠가 꽃피울 거야.','지금 힘들어도\n나중에 웃을 날이 와.','자신을 믿어,\n넌 충분히 할 수 있어.','오늘도 한 걸음\n앞으로 나아갔어.','결과에 집착하지 말고\n과정을 즐겨봐.','작은 성취도\n크게 기뻐해도 돼.','힘든 길을 가는\n네가 진짜 멋있어.','포기하고 싶을 때\n딱 한 번만 더 해봐.','내일의 나를 위해\n오늘 조금만 더 해봐.','네 노력은 반드시\n결실을 맺을 거야.','지치지 말고,\n쉬어가면서 가자.','오늘도 멋지게\n해냈어.','꿈을 향해\n한 걸음씩 가면 돼.','공부하는 지금 이 시간이\n미래를 만들고 있어.','힘들어도 웃어봐,\n다 잘 될 거야.','오늘도 화이팅,\n넌 정말 잘 하고 있어.','함께라면\n무엇이든 할 수 있어.'],
+   tw:['小小的努力累積起來就是大大的改變。','今天30分鐘也比0分鐘好100倍。','夢想不會等你，用行動追上它。','不要放棄，你現在做得很好。','辛苦的一天，過後也會成為回憶。','今天讀的書永遠不會消失。','慢慢來也沒關係，不停下來就好。','今天再難，明天可以不同。','小步伐創造大道路。','此刻盡力就好。','讀書終究不會背叛你。','覺得辛苦，正是努力的證明。','今天也辛苦了，你真的很了不起。','不要忘記目標，它一直在那裡。','今天的努力就是明天的實力。','不完美也沒關係，努力才是重點。','想休息的時候，再撐一下下。','你的夢想有價值，不要放棄。','艱難的時刻過後，就是成長。','今天做得很好，真心覺得你很棒。','什麼事情一開始都難，習慣就好了。','相信自己能做到，那就是開始。','現在的困難，代表你正在挑戰。','每天一點點成長的你，很帥。','今天一天，你盡力了。','不要怕犯錯，錯誤也是學習。','放棄還太早了。','加油，我也在你身邊。','朝夢想前進的過程很美。','今天的努力是給未來的禮物。','困難也不要停，你可以的。','你努力的樣子，真的很好看。','今天學的，總有一天會開花。','現在再難，以後會有笑著的那天。','相信自己，你完全可以做到。','今天又往前走了一步。','不要執著結果，享受過程吧。','小小的成就也可以大大慶祝。','走在難路上的你，真的很帥。','想放棄的時候，再試一次。','為了明天的自己，今天再多一點點。','你的努力一定會有結果。','不要累垮，邊休息邊前進。','今天也帥帥地做到了。','一步一步朝夢想走就好。','現在讀書的時間，正在創造未來。','再難也試著笑，一切都會好的。','今天也加油，你真的做得很好。','一起的話，什麼都可以做到。']},
+  {name:'TXT',tag:'TOMORROW X TOGETHER',
+   kr:['불완전한 노력이\n완벽한 게으름보다 의미있어.','복잡한 세상에서\n네 목표는 하나야.','오늘의 혼돈이\n최고의 너를 만들고 있어.','지금 힘든 게 당연해.\n그래서 더 의미있어.','혼자가 아니야,\n우리 함께야.','오늘 힘들어도\n내일 더 강해질 거야.','빛나는 건 쉽게 오지 않아,\n지금 이 순간을 버텨.','어려운 길을 택한 네가\n이미 용감해.','포기는 없어,\n우리는 계속 가는 거야.','복잡해도 괜찮아,\n그게 살아있다는 거야.','오늘의 노력이\n내일의 빛이 돼.','꿈을 향해 가는 길,\n외롭지 않아.','힘든 순간도\n우리의 일부야.','어제보다 나아진\n오늘을 자랑스러워해.','완벽하지 않아도\n넌 충분히 멋있어.','어두운 밤도\n결국 새벽이 와.','오늘 한 발짝이\n내일 두 발짝이 돼.','지쳐도 괜찮아,\n쉬면서 가면 되니까.','너의 혼돈이\n아름다운 이유가 있어.','실패해도 괜찮아,\n그게 성장이야.','오늘 힘내,\n내일의 너가 고마워할 거야.','포기하고 싶을 때\n우리를 생각해.','작은 걸음도\n큰 여정의 일부야.','지금 이대로도\n충분히 잘 하고 있어.','힘든 길이지만\n함께라면 갈 수 있어.','오늘의 눈물이\n내일의 웃음이 돼.','새벽은 반드시 와,\n조금만 더 버텨.','너의 노력은\n헛되지 않아.','불안해도 괜찮아,\n그래도 계속 가는 거야.','지금 이 과정이\n다 의미있어.','완벽한 사람은 없어,\n노력하는 사람이 있을 뿐.','힘들다고 멈추지 마,\n계속 가면 돼.','오늘도 잘 했어,\n정말로.','네 꿈을 포기하지 마,\n아직 끝나지 않았어.','혼자 힘들어하지 마,\n함께하자.','작은 성취도\n크게 기뻐해.','오늘 이 순간이\n나중에 추억이 될 거야.','지금 걷는 이 길이\n네 이야기야.','힘든 것도\n결국 지나가.','꿈을 꾸는 것 자체가\n이미 용기야.','오늘도 한 걸음\n더 나아갔어.','지치지 말고,\n천천히 가도 돼.','완벽함보다 꾸준함이\n더 강해.','오늘 힘내,\n내일은 달라질 거야.','어떤 상황에서도\n포기하지 마.','작은 오늘들이 모여\n큰 내일을 만들어.','힘들어도 웃자,\n다 잘 될 거야.','너의 가능성은\n무한해.','오늘도 응원할게,\n파이팅!'],
+   tw:['不完美的努力比完美的懈怠更有意義。','複雜的世界裡，你的目標只有一個。','今天的混沌，正在塑造最好的你。','現在覺得辛苦是正常的，所以更有意義。','你不孤單，我們一起。','今天再難，明天會更強大。','發光不是輕易得來的，現在這一刻要撐過去。','選擇了難走的路的你，已經很勇敢了。','不放棄，我們繼續走。','複雜也沒關係，那是活著的證明。','今天的努力就是明天的光。','朝夢想走的路，你不孤單。','艱難的時刻也是我們的一部分。','比昨天進步的今天，值得驕傲。','不完美也沒關係，你已經夠帥了。','黑暗的夜晚，終究迎來黎明。','今天的一步，明天就是兩步。','累了也沒關係，邊休息邊走就好。','你的混沌有它美麗的理由。','失敗也沒關係，那就是成長。','今天加油，明天的你會感謝你。','想放棄的時候，想想我們。','小步伐也是大旅程的一部分。','就現在這樣，你已經做得很好了。','難走的路，但一起就能走過去。','今天的眼淚，就是明天的笑容。','黎明一定會來，再撐一下。','你的努力不會白費。','不安也沒關係，繼續前進就好。','現在這個過程，都有意義。','沒有完美的人，只有努力的人。','難也不要停，繼續走就好。','今天也做得很好，真的。','不要放棄你的夢想，還沒結束。','不要一個人撐著，一起吧。','小小的成就也要大大慶祝。','今天這一刻，以後會成為回憶。','現在走的這條路，就是你的故事。','困難的事，終究會過去。','連做夢本身，都已經是勇氣。','今天又往前走了一步。','不要累垮，慢慢走也行。','比完美更強的是持續。','今天加油，明天會不一樣。','任何情況下都不要放棄。','小小的今天們聚集起來，創造大大的明天。','就算很難，也笑一笑，一切都會好的。','你的可能性是無限的。','今天也為你加油，Fighting！']},
+  {name:'BOYNEXTDOOR',tag:'BND · 보이넥스트도어',
+   kr:['매일 조금씩,\n쌓이면 대단해져.','오늘 노력한 네가\n내일의 더 나은 너야.','완벽하지 않아도 돼,\n매일 성장하면 충분해.','할 수 있어, 넌 이미\n충분히 노력하고 있어.','힘든 날도\n다 지나가.','오늘 하루도\n잘 해냈어.','작은 것에서\n시작하면 돼.','포기하기엔 아직\n일러.','네 페이스대로\n가면 돼.','오늘 힘낸 거\n내가 다 알아.','실수해도 괜찮아,\n다음에 잘 하면 돼.','오늘 공부한 게\n헛되지 않아.','지금 이 순간이\n미래를 바꾸고 있어.','힘들어도 미소 지어봐,\n기분이 나아질 거야.','꾸준함이\n최고의 무기야.','조금 쉬어가도 괜찮아,\n그것도 공부야.','너의 노력이\n분명히 빛날 날이 와.','오늘도 최선을 다한\n넌 정말 멋있어.','어제의 나보다\n오늘의 내가 더 나아.','포기하지 마,\n분명히 길이 있어.','힘든 과정이\n너를 강하게 만들어.','작은 성공도\n충분히 자랑스러워.','매일 한 걸음씩\n앞으로 나아가면 돼.','오늘 수고했어,\n정말 잘 했어.','꿈을 포기하지 마,\n너는 할 수 있어.','힘든 시간이\n지나면 빛날 거야.','남들과 비교하지 마,\n너만의 길이 있어.','오늘 힘냈다는 것\n잊지 마.','실패를 두려워하지 마,\n그게 발전이야.','지금 잘 하고 있어,\n의심하지 마.','피곤해도 괜찮아,\n오늘 한 것만으로 충분해.','오늘의 노력이\n내일의 결과가 돼.','힘들 때일수록\n더 강해지는 거야.','한 번에 안 돼도\n계속하면 돼.','공부하는 네 모습이\n정말 멋있어.','오늘 하루도\n잘 버텼어.','꿈을 향해\n한 걸음씩 가자.','완벽함보다\n꾸준함이 더 중요해.','어떤 상황에서도\n넌 해낼 수 있어.','지금 힘들어도\n나중엔 자랑스러울 거야.','오늘의 작은 노력이\n큰 차이를 만들어.','포기하고 싶을 때\n딱 한 번만 더 해봐.','힘든 길을 걷는 너,\n정말 대단해.','오늘도 잘 했어,\n진심으로.','작은 것부터\n하나씩 해나가면 돼.','네 꿈은 충분히\n이뤄질 수 있어.','매일 성장하는\n네가 자랑스러워.','오늘 하루도\n수고 많았어.','힘내, 분명히\n잘 될 거야.'],
+   tw:['每天一點點，累積起來就很厲害。','今天努力的你，就是明天更好的你。','不用完美，每天成長就夠了。','你可以的，你已經夠努力了。','再難的日子，也會過去。','今天一天，你做到了。','從小事開始就好。','放棄還太早了。','按照你自己的節奏走就好。','今天你的努力，我都知道。','犯錯也沒關係，下次做好就行。','今天讀的書，不會白費。','此刻正在改變未來。','就算很難，也試著笑，心情會好一點。','持續才是最強的武器。','稍微休息一下也沒關係，那也是學習。','你的努力，一定有發光的那天。','今天也盡力了，你真的很帥。','比昨天的我，今天的我更好了。','不要放棄，一定有路的。','艱難的過程讓你變得更強。','小小的成功也值得驕傲。','每天一步一步往前走就好。','今天辛苦了，真的很棒。','不要放棄你的夢想，你可以做到。','難熬的時間過後，就會發光。','不要和別人比，你有自己的路。','不要忘記今天努力了這件事。','不要怕失敗，那是進步。','你現在做得很好，不要懷疑。','再累也沒關係，今天做的已經夠了。','今天的努力，就是明天的結果。','越難的時候，越讓你變強。','一次做不到，繼續就好。','讀書的你，真的很帥。','今天一天，撐過來了。','朝著夢想，一步一步走吧。','比完美更重要的是持續。','不管什麼情況，你都能做到。','現在再難，以後會為自己驕傲。','今天的小努力，造成大差異。','想放棄的時候，再試一次。','走在難路上的你，真的了不起。','今天也做得很好，真心的。','從小事開始，一件一件做。','你的夢想完全可以實現。','每天成長的你，我很驕傲。','今天一天，辛苦了。','加油，一定會好的。']},
+  {name:'徐竟培',tag:'서경배 · CLOSE YOUR EYES',
+   kr:['낮에는 일하고\n밤에는 공부하는 네가 대단해.','월급 뒤에는 노력이 있고,\n공부 뒤에는 미래가 있어.','눈을 감고, 다시 뜨고,\n계속 공부해.','열심히 일하고,\n열심히 배우는 너 최고야.','일하면서 공부하는 건\n정말 쉬운 일이 아니야.','오늘도 회사에서 열심히 했지,\n공부도 파이팅.','피곤해도 책을 펴는 너,\n정말 대단해.','직장인 공부,\n그게 진짜 용기야.','월급도 벌고 꿈도 꾸는\n너는 특별해.','퇴근 후에도 공부하는\n네가 자랑스러워.','힘든 하루 끝에\n책을 펴는 용기.','일과 공부 사이에서\n균형을 찾는 네가 멋있어.','오늘 일도 공부도\n둘 다 잘 했어.','퇴근하고 공부한다는 것,\n그게 얼마나 대단한지 알아.','회사 끝나고도\n포기하지 않는 네가 최고야.','오늘 하루도\n두 가지를 다 해냈어.','일하면서 배우는 것,\n두 배로 성장하는 거야.','피곤함을 이기고\n공부하는 너를 응원해.','내일 더 나은 나를 위해\n오늘 조금 더 힘내.','일하는 것도, 공부하는 것도\n모두 미래를 위한 거야.','눈이 감겨도\n조금만 더 해봐.','직장과 꿈, 둘 다\n놓치지 않는 네가 대단해.','오늘 퇴근 후 공부한\n네 자신을 칭찬해.','월급날보다\n성적 오른 날이 더 기뻐.','일하는 동안에도\n꿈을 놓지 마.','퇴근하고 공부하는 건\n정말 보통 일이 아니야.','지치더라도\n포기하지 않는 게 진짜 강함이야.','오늘도 최선을 다한\n워킹 스튜던트 파이팅.','회사에서도 학교에서도\n빛나는 네가 멋있어.','일과 공부 모두\n네 미래를 위한 투자야.','힘들다고 느끼는 건\n그만큼 열심히 하고 있다는 뜻이야.','오늘 공부 조금 했어도\n안 한 것보다 훨씬 낫잖아.','직장인 학생,\n세상에서 가장 멋진 조합.','Close your eyes,\n그리고 다시 펴서 공부해.','퇴근 후 공부는\n진짜 용기 있는 선택이야.','오늘도 일하고 공부한\n네가 진짜 대단해.','힘든 하루지만\n한 페이지만 더 읽어봐.','돈도 벌고 꿈도 키우는\n너는 정말 특별해.','오늘 하루도\n두 마리 토끼 다 잡았어.','일하면서 배우는 사람이\n세상에서 제일 빛나.','퇴근하고도 책을 펴는 너,\n진짜 최고야.','오늘 고생 많았어,\n공부까지 하다니 대단해.','지금 힘든 이유는\n그만큼 열심히 하기 때문이야.','직장과 공부를 병행하는 건\n정말 쉬운 일이 아니야.','오늘 하루도\n잘 이겨냈어.','내일의 더 나은 나를\n위한 오늘의 노력.','퇴근 후 한 시간의 공부가\n미래를 바꿔.','일하면서 꿈을 꾸는\n네가 정말 멋있어.','오늘도 화이팅,\n당신은 할 수 있어요.'],
+   tw:['白天工作、晚上讀書的你，真的很了不起。','薪水背後是努力，讀書背後是未來。','閉上眼，再睜開，繼續讀書。','努力工作又努力學習的你，最棒了。','邊工作邊讀書，真的不是一件容易的事。','今天在公司也努力了，讀書也加油。','累了還是打開書的你，真的很了不起。','職場人讀書，那才是真正的勇氣。','邊領薪水邊追夢的你，很特別。','下班後還繼續讀書的你，我很驕傲。','辛苦的一天結束後，還打開書的勇氣。','在工作和讀書之間找到平衡的你，很帥。','今天工作和讀書都做到了，很棒。','下班後還讀書，那是多麼了不起的事你知道嗎。','下班後還不放棄的你，最棒了。','今天一天，兩件事都做到了。','邊工作邊學習，是雙倍的成長。','克服疲勞繼續讀書的你，我為你加油。','為了明天更好的自己，今天再努力一點。','工作也好讀書也好，都是為了未來。','就算眼皮在打架，再試一下。','工作和夢想都不放棄的你，了不起。','今天下班後讀書的自己，給自己鼓掌。','比發薪日更開心的，是成績進步的那天。','工作的時候也不要忘記夢想。','下班後讀書，真的不是普通人做得到的事。','就算累了，不放棄才是真正的強大。','今天也是努力的在職學生，加油。','在公司和學校都發光的你，很帥。','工作和讀書，都是給未來的投資。','感到辛苦，代表你正在努力。','今天只讀了一點，也比沒讀好多了。','在職學生，世界上最帥的組合。','Close your eyes，然後睜開繼續讀書。','下班後讀書是真正有勇氣的選擇。','今天也是工作讀書都做到了，真的很棒。','辛苦的一天，但再讀一頁吧。','邊賺錢邊追夢的你，真的很特別。','今天一天，兩件事都兼顧了。','邊工作邊學習的人，是世界上最閃亮的。','下班後還打開書的你，真的最棒了。','今天辛苦了，還讀書，真的了不起。','現在辛苦的原因，是因為你在那麼努力。','工作和讀書並行，真的不容易。','今天一天，撐過來了。','為了明天更好的自己所做的今天的努力。','下班後一小時的讀書，改變未來。','邊工作邊追夢的你，真的很帥。','今天也加油，你可以的。']},
 ];
 const WARN_KR=[{kr:'시간이 없어도\n책은 펼쳐야 해!',tw:'沒時間也要打開書！通勤時間也算進去！'},{kr:'20분이라도 괜찮아.\n지금 시작해!',tw:'就算只有20分鐘也OK，現在馬上開始！'}];
 
@@ -905,7 +919,7 @@ function renderTasks(){
   const enList=document.getElementById('task-list-en');
   const krList=document.getElementById('task-list-kr');
   if(!state.tasks.length){enList.innerHTML=krList.innerHTML='<div style="color:var(--text3);font-size:13px;padding:0.5rem;text-align:center">按上方「產生計畫」</div>';updateStats();return;}
-  const renderOne=(t,i)=>`<div class="task-row"><div class="chk ${state.doneSet.has(i)?'done':''}" onclick="toggleTask(${i})">${state.doneSet.has(i)?'✓':''}</div><div class="task-body"><div class="task-name ${state.doneSet.has(i)?'done':''}">${t.name}</div><div class="task-detail">${t.detail}</div>${t.method?`<div class="task-method" id="m${i}">${t.method.replace(/\n/g,'<br>')}</div><button class="method-btn" onclick="toggleMethod(${i})" id="mb${i}">▸ 查看詳細讀法</button>`:''}</div><div style="font-size:10px;color:var(--text3);font-family:'DM Mono';flex-shrink:0">${t.mins}분</div></div>`;
+  const renderOne=(t,i)=>`<div class="task-row"><div class="chk ${state.doneSet.has(i)?'done':''}" onclick="toggleTask(${i})">${state.doneSet.has(i)?'✓':''}</div><div class="task-body"><div class="task-name ${state.doneSet.has(i)?'done':''}">${t.name}</div><div class="task-detail">${t.detail}</div>${t.method?`<div class="task-method" id="m${i}">${t.method.replace(/\n/g,'<br>')}</div><button class="method-btn" onclick="toggleMethod(${i})" id="mb${i}">▸ 查看詳細讀法</button>`:''}<button onclick="noBook(${i})" style="font-size:10px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:10px;padding:2px 8px;cursor:pointer;margin-top:4px;font-family:inherit" title="今天沒帶這本書，換個方式">📚 沒帶這本書？</button></div><div style="font-size:10px;color:var(--text3);font-family:'DM Mono';flex-shrink:0">${t.mins}분</div></div>`;
   const en=state.tasks.map((t,i)=>({t,i})).filter(x=>x.t.lang==='en');
   const kr=state.tasks.map((t,i)=>({t,i})).filter(x=>x.t.lang==='kr'||x.t.lang==='topik');
   enList.innerHTML=en.length?en.map(x=>renderOne(x.t,x.i)).join(''):'<div style="color:var(--text3);font-size:13px;padding:0.5rem;text-align:center">今天沒有英文任務（可到設定新增書本）</div>';
@@ -933,8 +947,13 @@ function logToday(){
   const now=new Date();const key=`${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
   const mins=parseInt(document.getElementById('avail').value)||60;const done=state.doneSet.size;
   const pct=state.tasks.length?Math.round(done/state.tasks.length*100):100;
+  const completedTasks=[...state.doneSet].map(i=>state.tasks[i]).filter(Boolean).map(t=>({
+    name:t.name, mins:t.mins,
+    detail:t.detail||'',
+    lang:t.lang
+  }));
   const ei=state.logs.findIndex(l=>l.key===key);
-  const entry={key,mins,done,pct,date:now.toLocaleDateString('zh-TW'),hour:now.getHours()};
+  const entry={key,mins,done,pct,date:now.toLocaleDateString('zh-TW'),hour:now.getHours(),tasks:completedTasks};
   if(ei>=0)state.logs[ei]=entry;else state.logs.unshift(entry);
   if(state.logs.length>365)state.logs.pop();
   saveState();
@@ -1005,7 +1024,14 @@ function renderMonth(){
   document.getElementById('month-stats').innerHTML=`<div class="card-title">本月統計</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"><div class="stat-card"><div class="stat-num">${tDays}</div><div class="stat-label">學習天數</div></div><div class="stat-card"><div class="stat-num">${avgPct}%</div><div class="stat-label">平均完成率</div></div><div class="stat-card"><div class="stat-num">${avgMins}</div><div class="stat-label">平均分鐘</div></div></div>`;
 }
 function changeMonth(dir){state.calMonth+=dir;if(state.calMonth>11){state.calMonth=0;state.calYear++;}if(state.calMonth<0){state.calMonth=11;state.calYear--;}renderMonth();}
-function showDayDetail(key){const log=state.logs.find(l=>l.key===key);if(log)alert(`${log.date}\n讀書：${log.mins}分\n完成：${log.done}個任務\n完成率：${log.pct}%`);else alert(`${key}\n這天沒有記錄`);}
+function showDayDetail(key){
+  const log=state.logs.find(l=>l.key===key);
+  if(!log){alert(`${key}\n這天沒有學習記錄`);return;}
+  const taskDetails=log.tasks&&log.tasks.length>0
+    ?'\n\n完成的任務：\n'+log.tasks.map(t=>`${t.lang==='en'?'🇬🇧':'🇰🇷'} ${t.name}\n   ${t.detail||''}（${t.mins}分鐘）`).join('\n')
+    :'';
+  alert(`📅 ${log.date}\n⏱ 讀書時間：${log.mins} 分鐘\n✓ 完成任務：${log.done} 個\n📊 完成率：${log.pct}%${taskDetails}`);
+}
 
 // ══ REPORT ══
 function renderReport(){
@@ -1046,7 +1072,7 @@ function calcBoost(){
   const idol=IDOLS[state.idolIdx%IDOLS.length];const ki=Math.floor(Math.random()*idol.kr.length);
   document.getElementById('boost-result').innerHTML=`<div class="boost-row"><span style="font-size:12px;color:var(--text2)">比平時多讀</span><span class="boost-val">+${diff} 分</span></div><div class="boost-row"><span style="font-size:12px;color:var(--text2)">提前完成目標</span><span class="boost-val">約 ${daysAhead} 天</span></div><div class="boost-row"><span style="font-size:12px;color:var(--text2)">多記英文單字</span><span class="boost-val">約 ${enWords} 個</span></div><div class="idol-card" style="margin-top:12px;margin-bottom:0"><div class="idol-tag">${idol.tag}</div><div class="idol-kr">${idol.kr[ki].replace(/\n/g,'<br>')}</div><div class="idol-tw">${idol.tw[ki]}</div></div>`;
 }
-function renderBoost(){calcBoost();document.getElementById('month-timeline').innerHTML=MONTHS_PLAN.map(m=>`<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px"><span style="font-weight:600">${m.m} <span style="font-size:10px;color:var(--teal);margin-left:6px">${m.focus}</span></span><span style="color:var(--text3);font-family:'DM Mono';font-size:10px">${m.pct}%</span></div><div class="prog-wrap" style="margin-bottom:5px"><div class="prog-fill" style="width:${m.pct}%"></div></div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="badge b-en">${m.en}</span><span class="badge b-kr">${m.kr}</span></div></div>`).join('');}
+function renderBoost(){renderSmartSuggestion();calcBoost();document.getElementById('month-timeline').innerHTML=MONTHS_PLAN.map(m=>`<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px"><span style="font-weight:600">${m.m} <span style="font-size:10px;color:var(--teal);margin-left:6px">${m.focus}</span></span><span style="color:var(--text3);font-family:'DM Mono';font-size:10px">${m.pct}%</span></div><div class="prog-wrap" style="margin-bottom:5px"><div class="prog-fill" style="width:${m.pct}%"></div></div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="badge b-en">${m.en}</span><span class="badge b-kr">${m.kr}</span></div></div>`).join('');}
 
 // ══ BOOKS ══
 const CATEGORY_LABELS={'toeic_grammar':'多益文法','toeic_vocab':'多益單字','toeic_reading':'多益閱讀','toeic_listening':'多益聽力','toeic_writing':'多益寫作','en_conversation':'英文生活會話','en_speaking':'英文口說','en_gept':'英檢GEPT','en_grammar':'英文文法','topik_grammar':'TOPIK文法','topik_vocab':'TOPIK單字','topik_reading':'TOPIK閱讀','topik_listening':'TOPIK聽力','topik_writing':'TOPIK寫作','kr_conversation':'韓文生活會話','kr_speaking':'韓文口說','kr_grammar':'韓文文法','kr_culture':'韓文流行文化','pronunciation':'發音練習','translation':'翻譯練習','mock_exam':'考試模擬'};
@@ -1125,6 +1151,58 @@ function renderRules(){
   const el=document.getElementById('log-list');
   if(!state.logs.length){el.innerHTML='<div style="font-size:13px;color:var(--text3)">完成今日計畫後按「完成今日打卡」會自動記錄</div>';return;}
   el.innerHTML=state.logs.slice(0,20).map(l=>`<div class="boost-row"><span style="font-size:11px;color:var(--text2)">${l.date}</span><span style="font-size:12px;color:var(--text)">${l.mins}分 · ${l.done}個 · ${l.pct}%</span></div>`).join('');
+}
+
+// ══ NO BOOK SUBSTITUTE ══
+const NO_BOOK_SUBS={
+  grammar:{en:[{name:'英文文法影片學習',detail:'YouTube搜尋「English Grammar lesson」，看15分鐘',mins:15},{name:'英文文法筆記複習',detail:'翻看之前的筆記或手機拍的頁面',mins:10}],kr:[{name:'韓文文法Podcast',detail:'TTMIK Podcast 聽一集，注意文型的使用方式',mins:15},{name:'韓文文法用手機查閱',detail:'用Naver字典查今天要學的文型，看例句',mins:15}]},
+  vocab:{en:[{name:'英文單字App練習',detail:'手機下載Quizlet或用瀏覽器練習，搜尋「TOEIC vocabulary」',mins:15},{name:'英文單字聽力',detail:'YouTube搜尋「TOEIC vocabulary pronunciation」，邊聽邊記',mins:15}],kr:[{name:'韓文單字Podcast',detail:'TTMIK或韓文單字相關Podcast，聽一集',mins:15},{name:'用手機Naver字典背字',detail:'在Naver字典搜尋今天要背的字，看例句',mins:15}]},
+  listen:{en:[{name:'BBC Learning English',detail:'手機開BBC Learning English網站，聽一個短片',mins:20},{name:'英文Podcast',detail:'聽任何英文Podcast 20分鐘，專注聽懂內容',mins:20}],kr:[{name:'TTMIK Podcast',detail:'ttmik.com 或 Spotify 搜尋 TalkToMeInKorean，聽一集',mins:20},{name:'韓劇/韓綜不開字幕',detail:'看15分鐘韓劇不開字幕，練習聽力',mins:15}]},
+  exam:{en:[{name:'多益線上練習題',detail:'ETS官方網站 ets.org/toeic 有免費樣題，手機就能做',mins:20},{name:'多益App練習',detail:'手機搜尋「多益題目」App，做5~10題',mins:15}],kr:[{name:'TOPIK線上練習',detail:'topik.go.kr 官網有歷屆試題，手機就能練',mins:20},{name:'韓文閱讀練習',detail:'Naver新聞選一篇短文，試著閱讀理解',mins:15}]},
+  write:{en:[{name:'英文造句練習',detail:'用今天學的文法，在手機備忘錄寫5個句子',mins:15},{name:'英文日記一段',detail:'用手機寫3~5句英文日記，記錄今天發生的事',mins:15}],kr:[{name:'韓文大作文句型練習',detail:'在手機備忘錄練習寫3個TOPIK常用句型',mins:15},{name:'韓文造句練習',detail:'用學過的文型，在手機備忘錄造5個句子',mins:15}]},
+};
+
+function noBook(i){
+  const t=state.tasks[i];
+  const subs=NO_BOOK_SUBS[t.type||'vocab'];
+  if(!subs){alert('這個任務不需要書本，直接做就好！');return;}
+  const langSubs=subs[t.lang==='en'?'en':'kr']||subs['en'];
+  const sub=langSubs[Math.floor(Math.random()*langSubs.length)];
+  if(confirm(`📚 沒帶「${t.name}」？\n\n換成：${sub.name}\n做法：${sub.detail}\n時間：${sub.mins}分鐘\n\n要換成這個任務嗎？`)){
+    state.tasks[i]={...t,name:sub.name+'（替代）',detail:sub.detail,mins:sub.mins,method:'',bookId:'substitute'};
+    renderTasks();
+  }
+}
+
+// ══ SMART SUGGESTION ══
+function renderSmartSuggestion(){
+  const el=document.getElementById('smart-suggestion');
+  if(!el)return;
+  const avgMins=state.logs.length>0?Math.round(state.logs.slice(0,14).reduce((a,l)=>a+l.mins,0)/Math.min(14,state.logs.length)):60;
+  const suggestions=[];
+  const toeicDays=state.exams.toeicDate?Math.ceil((new Date(state.exams.toeicDate)-new Date())/(1000*60*60*24)):null;
+  const topikDays=state.exams.topikDate?Math.ceil((new Date(state.exams.topikDate)-new Date())/(1000*60*60*24)):null;
+  if(toeicDays&&toeicDays<=42){suggestions.push({text:`多益還有 <strong>${toeicDays} 天</strong>，建議今天多讀 <strong>20 分鐘</strong> 題庫練習`,extra:20,exam:'多益'});}
+  else if(topikDays&&topikDays<=42){suggestions.push({text:`TOPIK還有 <strong>${topikDays} 天</strong>，建議今天多讀 <strong>20 分鐘</strong> 韓文寫作`,extra:20,exam:'TOPIK'});}
+  else{
+    const extra=Math.min(30,Math.max(10,Math.round((60-avgMins)*0.5)+15));
+    const daysAhead=Math.max(1,Math.round(extra/2));
+    suggestions.push({text:`你平均每天讀 <strong>${avgMins} 分鐘</strong>，今天再多讀 <strong>${extra} 分鐘</strong>，可以提前約 <strong>${daysAhead} 天</strong> 完成目標`,extra,exam:null});
+  }
+  const idol=IDOLS[state.idolIdx%IDOLS.length];
+  el.innerHTML=suggestions.map(s=>`
+    <div style="background:var(--teal-light);border:1px solid rgba(45,122,95,0.2);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:8px">
+      <div style="font-size:13px;color:var(--teal);line-height:1.6">💡 ${s.text}</div>
+      <button onclick="applyBoostSuggestion(${s.extra})" class="btn btn-teal btn-sm" style="margin-top:8px">今天就多讀 ${s.extra} 分鐘 ↗</button>
+    </div>`).join('')+
+    `<div style="font-size:12px;color:var(--text3);margin-top:8px;font-style:italic">${idol.name}：「${idol.tw[0]}」</div>`;
+}
+
+function applyBoostSuggestion(extra){
+  const cur=parseInt(document.getElementById('avail').value)||60;
+  document.getElementById('avail').value=cur+extra;
+  generateToday();
+  nav('today');
 }
 
 // ══ METHODS ══
