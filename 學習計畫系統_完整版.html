@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>나의 학습 플랜 v5</title>
+<title>나의 학습 플랜 v6</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -253,13 +253,14 @@ input:focus,select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(45,1
 <nav class="sidebar">
   <div class="logo">
     <div class="logo-kr">나의 학습</div>
-    <div class="logo-title">學習計畫系統</div>
+    <div class="logo-title">學習計畫系統 v6</div>
     <div class="logo-user" id="user-display"></div>
   </div>
   <div class="nav-item active" onclick="nav('today')"><span class="nav-icon">✦</span>今天<span class="nav-kr">오늘</span></div>
   <div class="nav-item" onclick="nav('progress')"><span class="nav-icon">📊</span>進度<span class="nav-kr">진도</span></div>
   <div class="nav-item" onclick="nav('settings')"><span class="nav-icon">⚙</span>設定<span class="nav-kr">설정</span></div>
   <div style="margin-top:auto;padding:0 20px 12px">
+    <button class="btn btn-sm" onclick="exportData()" style="width:100%;font-size:11px;color:var(--teal);margin-bottom:6px">📤 匯出備份</button>
     <button class="btn btn-sm" onclick="signOut()" style="width:100%;font-size:11px;color:var(--text3)">登出</button>
   </div>
 </nav>
@@ -304,6 +305,7 @@ input:focus,select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(45,1
 
   <!-- 兩週測驗提醒 -->
   <div id="test-reminder-area"></div>
+  <div id="recommend-area"></div>
 
   <!-- 今天設定 -->
   <div class="card">
@@ -457,10 +459,11 @@ input:focus,select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(45,1
     <div class="seg-tab" onclick="settingsTab('exams')">考試設定</div>
     <div class="seg-tab" onclick="settingsTab('rules')">我的規定</div>
     <div class="seg-tab" onclick="settingsTab('methods')">學習方法</div>
+    <div class="seg-tab" onclick="settingsTab('claude')">找Claude</div>
   </div>
 
   <div id="stab-books">
-    <div class="notice">填入頁數後，計畫會精確到「今天第X頁到第Y頁」。新增書籍後系統自動排進計畫，依技能類型智能平衡分配。</div>
+    <div class="notice">以<strong>單元</strong>為單位，不是頁數。每本書填「總單元數」，每天讀「幾個單元」。讀完一個單元打勾後進行難度評分，系統自動安排複習時間。</div>
     <div id="book-list-form"></div>
     <button class="btn btn-sm" onclick="toggleAddBook()" id="add-btn" style="margin-top:8px">＋ 新增一本書</button>
     <div class="card" id="add-book-form" style="display:none;margin-top:12px">
@@ -643,6 +646,17 @@ function signOut(){auth.signOut();}
 async function showApp(u){document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='flex';document.getElementById('user-display').textContent=u.displayName||u.email||'';await loadState();initApp();}
 
 // ══ SAVE/LOAD ══
+// ══ EXPORT/IMPORT ══
+function exportData(){
+  const data=JSON.stringify({books:state.books,rules:state.rules,logs:state.logs,exams:state.exams,exported:new Date().toISOString()},null,2);
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`學習備份_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.json`;
+  a.click();URL.revokeObjectURL(url);
+  alert('備份已下載！儲存好這個檔案，下次可以匯入還原所有設定。');
+}
+
 async function saveState(){
   const data={books:state.books,rules:state.rules,logs:state.logs,idolIdx:state.idolIdx,exams:state.exams,timerLogs:state.timerLogs,lastTestDate:state.lastTestDate};
   if(db&&currentUser){try{await db.collection('users').doc(currentUser.uid).set(data,{merge:true});}catch(e){}}
@@ -786,7 +800,7 @@ let warnMode=false;
 
 function initApp(){
   state.selDay=new Date().getDay()===0?6:new Date().getDay()-1;
-  renderIdol();renderStreak();renderCountdown();renderBehind();renderTestReminder();
+  renderIdol();renderStreak();renderCountdown();renderBehind();renderTestReminder();renderRecommend();
 }
 
 // ══ NAV ══
@@ -806,8 +820,8 @@ function progressTab(t){
 }
 
 function settingsTab(t){
-  document.querySelectorAll('#page-settings .seg-tab').forEach((el,i)=>el.classList.toggle('active',['books','exams','rules','methods'][i]===t));
-  ['books','exams','rules','methods'].forEach(id=>{const el=document.getElementById('stab-'+id);if(el)el.style.display=id===t?'block':'none';});
+  document.querySelectorAll('#page-settings .seg-tab').forEach((el,i)=>el.classList.toggle('active',['books','exams','rules','methods','claude'][i]===t));
+  ['books','exams','rules','methods','claude'].forEach(id=>{const el=document.getElementById('stab-'+id);if(el)el.style.display=id===t?'block':'none';});
   if(t==='books')renderBooks();if(t==='exams')renderExams();if(t==='rules')renderRules();if(t==='methods')renderMethods();
 }
 
@@ -843,7 +857,7 @@ function renderTestReminder(){
   const last=state.lastTestDate?new Date(state.lastTestDate):null;
   const daysSince=last?Math.floor((new Date()-last)/(1000*60*60*24)):999;
   if(daysSince>=14){
-    area.innerHTML=`<div class="purple-box">📋 兩週測驗提醒：你已經 <strong>${daysSince>=999?'還沒有':'超過'+daysSince+'天'}</strong> 沒有測驗進度了！把你目前學的文型貼給 Claude，請他幫你評估能不能換書。<br><br><button class="btn btn-xs" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(122,93,184,0.3);margin-top:6px" onclick="markTestDone()">✓ 我今天已經測驗了</button></div>`;
+    area.innerHTML=`<div class="purple-box">📋 <strong>兩週換書測驗提醒</strong><br>你已經 <strong>${daysSince>=999?'從來沒有':'超過'+daysSince+'天'}</strong> 沒有找 Claude 測驗了！<br><br>測驗方式：去「設定→找Claude」頁面，點「產生學習摘要」，複製後開新對話貼給 Claude，請他幫你評估能不能換下一本書。<br><br><button class="btn btn-xs" onclick="nav('settings');settingsTab('claude')" style="background:var(--purple-dim);color:var(--purple);border-color:rgba(122,93,184,0.3);margin-top:4px">前往找 Claude ↗</button> <button class="btn btn-xs" onclick="markTestDone()" style="background:none;color:var(--text3);border-color:var(--border);margin-top:4px;margin-left:4px">✓ 我今天已測驗</button></div>`;
   }else{area.innerHTML='';}
 }
 
@@ -1359,6 +1373,68 @@ function validateMinMins(val, type){
   return true;
 }
 
+
+// ══ TODAY RECOMMEND ══
+function renderRecommend(){
+  const cm=state.exams.currentMonth||1;
+  const toeicDays=state.exams.toeicDate?Math.ceil((new Date(state.exams.toeicDate)-new Date())/(1000*60*60*24)):null;
+  const topikDays=state.exams.topikDate?Math.ceil((new Date(state.exams.topikDate)-new Date())/(1000*60*60*24)):null;
+  let html='';
+  if(toeicDays&&toeicDays<=42)html=`<div class="amber-box">💡 <strong>今日建議多讀：</strong>多益還有 ${toeicDays} 天！建議今天加讀一個<strong>多益閱讀或聽力單元</strong>，提升應考能力。<button onclick="applyExtraTime(25)" class="btn btn-xs btn-teal" style="margin-left:8px">+25分鐘 ↗</button></div>`;
+  else if(topikDays&&topikDays<=42)html=`<div class="amber-box">💡 <strong>今日建議多讀：</strong>TOPIK還有 ${topikDays} 天！建議今天加讀一個<strong>韓文大作文句型單元</strong>，你的寫作是最大得分空間。<button onclick="applyExtraTime(20)" class="btn btn-xs btn-teal" style="margin-left:8px">+20分鐘 ↗</button></div>`;
+  else if(cm>=7)html=`<div class="ok-box">💡 <strong>今日建議：</strong>你已進入考試準備階段！建議加讀一個<strong>多益模擬題單元</strong>，計時練習效果最好。<button onclick="applyExtraTime(25)" class="btn btn-xs btn-teal" style="margin-left:8px">+25分鐘 ↗</button></div>`;
+  const el=document.getElementById('recommend-area');if(el)el.innerHTML=html;
+}
+function applyExtraTime(extra){const cur=parseInt(document.getElementById('avail').value)||60;document.getElementById('avail').value=cur+extra;generateToday();}
+
+// ══ EBBINGHAUS AUTO-REVIEW ══
+const EBBINGHAUS_DAYS=[1,3,7,14,30];
+const DIFF_MULT={easy:1.5,mid:1.0,hard:0.6};
+function getNextReviewDate(learnedDate,reviews,difficulty){
+  const mult=DIFF_MULT[difficulty]||1.0;
+  const reviewCount=reviews?reviews.length:0;
+  const intervalDays=Math.round(EBBINGHAUS_DAYS[Math.min(reviewCount,EBBINGHAUS_DAYS.length-1)]*mult);
+  const base=reviews&&reviews.length>0?new Date(reviews[reviews.length-1].date):new Date(learnedDate);
+  const next=new Date(base);next.setDate(next.getDate()+intervalDays);
+  return next.toISOString().split('T')[0];
+}
+
+// ══ CLAUDE MESSAGE ══
+function generateClaudeMsg(){
+  const en=state.books.filter(b=>b.lang==='en'&&b.active);
+  const kr=state.books.filter(b=>(b.lang==='kr'||b.lang==='topik')&&b.active);
+  const streak=calcStreak();
+  const msg=`你好 Claude！我是 Meng Ching，以下是我的學習狀況，請幫我評估。
+
+【基本資訊】
+- 台中科技大學假日班，平日工作 9:00-18:00
+- 目標：多益 ${state.exams.toeicTarget||600}分（考試日：${state.exams.toeicDate||'未設定'}）
+- 目標：TOPIK II ${state.exams.topikTarget||5}級（考試日：${state.exams.topikDate||'未設定'}）
+- 目前學習第 ${state.exams.currentMonth||1} 個月
+- TOPIK 現有成績：4級 168分（聽力78、閱讀70、寫作20分）
+
+【英文教材進度】
+${en.map(b=>`- ${b.name}：第${b.currentUnit||b.current||0}/${b.totalUnits||b.total||'?'}單元`).join('\n')||'尚未設定'}
+
+【韓文教材進度】
+${kr.map(b=>`- ${b.name}：第${b.currentUnit||b.current||0}/${b.totalUnits||b.total||'?'}單元`).join('\n')||'尚未設定'}
+
+【學習統計】
+- 連續學習：${streak}天
+- 累積學習：${state.logs.length}天
+
+【我想請你幫我】
+1. 根據以上進度，評估我現在能不能換下一本書
+2. 幫我出3個測驗題，考考我最近學的內容
+3. 給我接下來的學習建議`;
+  document.getElementById('claude-msg').style.display='block';
+  document.getElementById('claude-msg-text').value=msg;
+}
+function copyClaudeMsg(){
+  const el=document.getElementById('claude-msg-text');
+  if(navigator.clipboard){navigator.clipboard.writeText(el.value).then(()=>alert('已複製！開新對話貼給 Claude 就好 😊'));}
+  else{el.select();document.execCommand('copy');alert('已複製！開新對話貼給 Claude 就好 😊');}
+}
 </script>
 </body>
 </html>
